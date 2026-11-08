@@ -1,53 +1,65 @@
 # 🏛️ Sistema de Reserva de Espacios Académicos — UdeC Campus Los Ángeles
 
-Plataforma institucional de gestión horaria y reserva de salas, laboratorios y auditorios para la **Universidad de Concepción — Campus Los Ángeles**, basada en **MRBS** con personalización integral **Tema Institucional UdeC**.
+Sistema institucional de reservas y gestión horaria de salas, laboratorios y recintos académicos para la **Universidad de Concepción — Campus Los Ángeles**, desarrollado sobre **MRBS** con personalización completa del **Tema Institucional UdeC**.
 
 ---
 
-## ✨ Características Principales Implementadas
+## 📁 Estructura del Repositorio
 
-1. **Diseño Institucional UdeC (`Themes/udec/`):**
-   - Cabecera oficial con escudo UdeC, paleta cromática institucional (Navy `#002E5D` y Dorado `#EAAA00`).
-   - **Línea de Tiempo en Vivo:** Indicador visual de hora/módulo actual en el calendario.
-   - **Tarjetas Flotantes (*Hover Cards*):** Vista rápida de asignatura, solicitante, sala, bloque horario exacto y estado sin recargar la página.
-   - **Cintillo de Ficha Técnica de Recinto:** Muestra automáticamente capacidad oficial, tipo de sala (*Normal, Híbrida, AIO*) y equipamiento tecnológico (*Proyector, Pantalla Táctil, PC, Audio AUX/BT, A/C, TV*).
-2. **Panel Administrativo de Reservas Pendientes (`admin_pending.php`):**
-   - Gestión en 1 clic de reservas *Sin Confirmar / Tentativas* y *Por Aprobar*.
-   - Agrupación inteligente de series semestrales, tarjetas KPI interactivas, filtros combinables y acciones por lote (*Bulk Confirm / Delete*).
-   - Contador dinámico en vivo en la barra superior de navegación.
-3. **Panel Visual Web de Tipos y Colores (`admin_types.php`):**
-   - Administración en vivo de carreras, unidades y colores institucionales con selector HTML5 y persistencia en `Themes/udec/types_config.json`.
-   - Leyenda interactiva en el calendario con filtro instantáneo por carrera/unidad.
-4. **Catastro Oficial de Salas y Laboratorios Actualizado:**
-   - Capacidades y equipamiento sincronizados con el catastro oficial del Campus Los Ángeles, incluyendo el nuevo **Edificio de Laboratorios** (`Lab 1`, `Lab 2`, `Lab 3`), `Laboratorio Música`, `Lab. de Artes` y `Lab. Geomática`.
+El repositorio contiene exclusivamente los componentes esenciales del sistema y su base de datos:
 
----
-
-## 📂 Estructura del Repositorio
-
-| Carpeta / Archivo | Descripción |
-| :--- | :--- |
-| [`Hosting_Nuevo_FTP_phpMyAdmin/`](./Hosting_Nuevo_FTP_phpMyAdmin/) | **Paquete listo para subir a un Nuevo Hosting (FTP + phpMyAdmin)**. Incluye todos los archivos web (`Archivos_Web_FTP/`), el archivo comprimido `Archivos_Web_FTP.zip`, la base de datos unificada lista para importar (`unidadti_completa_udec.sql.zip`) y la guía paso a paso. |
-| [`sistemadereserva/`](./sistemadereserva/) | Entorno completo con **Docker & Docker Compose** (`mrbs/`, `DB/`, `Dockerfile`, `docker-compose.yml`) para desarrollo y pruebas locales. |
-| [`Archivos_Para_Subir_Servidor/`](./Archivos_Para_Subir_Servidor/) | Paquete ligero únicamente con los archivos modificados/nuevos (útil para actualizar un servidor MRBS preexistente). |
-| [`Documentos/`](./Documentos/) | Catastro oficial de salas/edificios (`.xlsx`) e informes de gestión horaria. |
-| [`history.md`](./history.md) | Bitácora técnica detallada de todas las fases de desarrollo e implementación. |
+```text
+├── sistemadereserva/
+│   ├── mrbs/             # Aplicación web completa MRBS + Tema Institucional UdeC
+│   │   ├── Themes/udec/  # Estilos, scripts, cabecera y configuración de carreras/colores
+│   │   ├── admin_pending.php  # Panel de Reservas Pendientes y Sin Confirmar
+│   │   ├── admin_types.php    # Panel Web de Gestión de Carreras y Colores
+│   │   ├── config.inc.php     # Configuración general y conexión a BD
+│   │   └── ...
+│   │
+│   ├── DB/               # Base de datos MySQL / MariaDB
+│   │   ├── mbrs_0611unidadti.sql        # Volcado base con +28.500 reservas históricas
+│   │   ├── z_actualizar_salas_udec.sql  # Script de salas, laboratorios y campo solicitante
+│   │   └── phpmyadmin/
+│   │       └── unidadti_completa_udec.sql.zip # Dump completo consolidado para phpMyAdmin
+│   │
+│   ├── Dockerfile        # Definición de contenedor Apache + PHP para MRBS
+│   ├── docker-compose.yml# Despliegue local (Web en :8085, MariaDB en :3307, phpMyAdmin en :8086)
+│   └── README.md
+│
+└── README.md
+```
 
 ---
 
-## 🚀 Despliegue Rápido en Nuevo Hosting (FTP + phpMyAdmin)
+## ✨ Características Principales
 
-Consulta la guía detallada en [`Hosting_Nuevo_FTP_phpMyAdmin/INSTRUCCIONES_HOSTING_FTP_Y_PHPMYADMIN.txt`](./Hosting_Nuevo_FTP_phpMyAdmin/INSTRUCCIONES_HOSTING_FTP_Y_PHPMYADMIN.txt):
+1. **Tema Institucional UdeC (`Themes/udec/`):**
+   - Escudo oficial UdeC y paleta cromática (Azul marino `#002E5D` y Dorado `#EAAA00`).
+   - **Hover Cards:** Tarjetas emergentes interactivas con horario pedagógico exacto, asignatura, docente/solicitante y estado.
+   - **Línea de Tiempo en Vivo:** Marcador de hora y bloque pedagógico actual en la grilla.
+   - **Ficha Técnica de Recinto:** Cintillo superior que muestra automáticamente capacidad oficial, tipo de sala y equipamiento activo (Proyector, Pantalla Táctil, PC, Audio, A/C, TV).
+2. **Panel Administrativo de Pendientes (`admin_pending.php`):**
+   - Aprobación y confirmación en 1 clic de reservas puntuales y series semestrales agrupadas.
+   - Contador en vivo de pendientes en la barra de navegación superior.
+3. **Panel Web Visual de Tipos y Colores (`admin_types.php`):**
+   - Configuración gráfica de carreras, unidades y colores en tiempo real sin tocar código (`types_config.json`).
+4. **Catastro Oficial Actualizado:**
+   - 68 salas y recintos sincronizados con el catastro oficial, incorporando el **Edificio de Laboratorios** (`Lab 1`, `Lab 2`, `Lab 3`), `Laboratorio Música`, `Lab. de Artes` y `Lab. Geomática`.
 
-1. **Base de Datos (phpMyAdmin):**
-   - Crea una base de datos y usuario MySQL en tu hosting.
-   - Entra a **phpMyAdmin -> Importar** y sube el archivo:
-     `Hosting_Nuevo_FTP_phpMyAdmin/Base_de_Datos_phpMyAdmin/unidadti_completa_udec.sql.zip` (742 KB).
-2. **Configuración (`config.inc.php`):**
-   - Edita `Hosting_Nuevo_FTP_phpMyAdmin/Archivos_Web_FTP/config.inc.php` (líneas 58-73) con el host, nombre de base de datos, usuario y contraseña de tu nuevo hosting.
-3. **Subida por FTP:**
-   - Sube el contenido de `Hosting_Nuevo_FTP_phpMyAdmin/Archivos_Web_FTP/` (o descomprime `Archivos_Web_FTP.zip`) en la carpeta `public_html` de tu servidor.
-   - Asigna permisos de escritura (`chmod 666`) al archivo `Themes/udec/types_config.json`.
+---
+
+## 🚀 Despliegue en Servidor / Hosting (FTP + phpMyAdmin)
+
+1. **Importar la Base de Datos en phpMyAdmin:**
+   - Crear una base de datos MySQL (ej. `unidadti`).
+   - En phpMyAdmin, ir a **Importar** y seleccionar el archivo comprimido:
+     `sistemadereserva/DB/phpmyadmin/unidadti_completa_udec.sql.zip` (742 KB).
+2. **Configurar Credenciales:**
+   - Abrir `sistemadereserva/mrbs/config.inc.php` y ajustar `db_host`, `db_database`, `db_login` y `db_password`.
+3. **Subir Archivos por FTP:**
+   - Subir el contenido de `sistemadereserva/mrbs/` al directorio web (`public_html`).
+   - Asignar permisos de escritura (`chmod 666`) a `Themes/udec/types_config.json`.
 
 ---
 
@@ -57,5 +69,5 @@ Consulta la guía detallada en [`Hosting_Nuevo_FTP_phpMyAdmin/INSTRUCCIONES_HOST
 cd sistemadereserva
 docker compose up -d
 ```
-- **Sistema Web MRBS:** `http://localhost:8085`
-- **phpMyAdmin Local:** `http://localhost:8086`
+- **Sistema MRBS:** [http://localhost:8085](http://localhost:8085)
+- **phpMyAdmin Local:** [http://localhost:8086](http://localhost:8086)

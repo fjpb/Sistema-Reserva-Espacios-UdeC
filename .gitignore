@@ -1,4 +1,21 @@
+# Sistema y archivos del SO
 .DS_Store
 **/.DS_Store
 Thumbs.db
 *.log
+
+# Carpetas y archivos de trabajo local no necesarios en el repositorio
+AGENTS.md
+Archivos_Para_Subir_Servidor/
+Archivos_Para_Subir_Servidor.zip
+Demo nuevo html/
+Documentos/
+Hosting_Nuevo_FTP_phpMyAdmin/
+Sistema de Reserva de Espacios - Jefe de Carrera/
+arquitectura.md
+history.md
+problemas.md
+
+# Archivos temporales de oficina
+*.docx
+*.xlsx

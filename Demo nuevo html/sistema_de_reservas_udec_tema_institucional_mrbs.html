@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Reserva de Salas y Equipos - Universidad de Concepción</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            udec: {
+              navy: '#002B49',
+              blue: '#003865',
+              blueLight: '#0d4e8a',
+              gold: '#E89D1E',
+              goldHover: '#c98412',
+              ice: '#F4F7FA',
+              border: '#E2E8F0',
+              accent: '#2563eb'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars for clean schedule viewing */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Barra superior institucional -->
+  <header class="bg-udec-navy text-white border-b-4 border-udec-gold shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand / Logo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-udec-gold flex items-center justify-center font-bold text-udec-navy text-xl shadow-inner">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs uppercase tracking-wider font-semibold text-slate-300">Universidad de Concepción</span>
+            <div class="flex items-center gap-2">
+              <span class="text-base sm:text-lg font-bold text-white tracking-tight">Portal de Reservas TI</span>
+              <span class="text-xs bg-udec-gold/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded font-mono">v2.0 Modern MRBS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- User profile & Quick Links -->
+        <div class="flex items-center gap-3">
+          <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 text-xs text-slate-200">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Periodo Académico Activo</span>
+          </div>
+
+          <!-- User Badge -->
+          <div class="flex items-center gap-3 pl-2 border-l border-white/10">
+            <div class="w-8 h-8 rounded-full bg-udec-gold text-udec-navy font-bold flex items-center justify-center text-sm ring-2 ring-white/20">
+              CC
+            </div>
+            <div class="hidden sm:block text-left text-xs leading-tight">
+              <p class="font-semibold text-white">Carlos Contreras</p>
+              <p class="text-slate-300 text-[11px]">ccontreras@udec.cl</p>
+            </div>
+            <button id="toggleMenuBtn" title="Opciones" class="text-slate-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
+              <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Barra de control y navegación de fecha/área MRBS -->
+  <div class="bg-white border-b border-udec-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Selectores de Edificio / Área y Recurso -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label for="areaSelect" class="text-xs font-semibold text-slate-500 uppercase">Área / Edificio:</label>
+            <select id="areaSelect" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-udec-blue focus:border-udec-blue block py-1.5 px-3 font-medium">
+              <option value="ti">Unidad TI - Edificio Central</option>
+              <option value="lab">Laboratorios de Computación</option>
+              <option value="aulas">Aulas Tecnológicas</option>
+              <option value="reunion">Salas de Reuniones & Teleconferencias</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="roomFilter" class="text-xs font-semibold text-slate-500 uppercase">Filtrar:</label>
+            <select id="roomFilter" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-udec-blue focus:border-udec-blue block py-1.5 px-3 font-medium">
+              <option value="all">Todas las salas (6)</option>
+              <option value="large">Capacidad +20</option>
+              <option value="projector">Con Proyector / TV</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Controles de Fecha (MRBS Navegación Día/Semana/Mes) -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+          <div class="inline-flex rounded-lg border border-slate-300 shadow-sm p-0.5 bg-slate-100">
+            <button id="viewDayBtn" class="px-3 py-1 text-xs font-semibold rounded-md bg-white text-udec-navy shadow-sm transition">Día</button>
+            <button id="viewWeekBtn" class="px-3 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Semana</button>
+            <button id="viewMonthBtn" class="px-3 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Mes</button>
+          </div>
+
+          <div class="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg p-1">
+            <button id="prevDateBtn" title="Día anterior" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-udec-navy hover:bg-slate-200 rounded transition">
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <button id="todayBtn" class="px-2.5 py-1 text-xs font-semibold text-udec-navy hover:bg-slate-200 rounded transition">
+              Hoy
+            </button>
+            <button id="nextDateBtn" title="Día siguiente" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-udec-navy hover:bg-slate-200 rounded transition">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 bg-udec-ice border border-slate-200 rounded-lg px-3 py-1 text-udec-navy font-semibold text-xs sm:text-sm">
+            <i class="fa-regular fa-calendar-days text-udec-blue"></i>
+            <span id="currentDateDisplay">Lunes, 19 de Octubre 2026</span>
+          </div>
+
+          <!-- Botón Nueva Reserva -->
+          <button id="openNewBookingModalBtn" class="bg-udec-blue hover:bg-udec-navy text-white text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-lg shadow-sm flex items-center gap-2 transition hover:shadow duration-200">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Nueva Reserva</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Leyenda de colores de reservas MRBS institucional -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 w-full">
+    <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs">
+      <div class="flex flex-wrap items-center gap-4">
+        <span class="font-bold text-slate-700 uppercase tracking-wide text-[11px] flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info text-udec-blue"></i> Estados:
+        </span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3.5 h-3.5 rounded bg-emerald-500 shadow-xs"></span>
+          <span>Docencia / Clases</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3.5 h-3.5 rounded bg-sky-600 shadow-xs"></span>
+          <span>Reunión DTI</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3.5 h-3.5 rounded bg-amber-500 shadow-xs"></span>
+          <span>Mantenimiento TI</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3.5 h-3.5 rounded bg-purple-600 shadow-xs"></span>
+          <span>Defensa Tesis / Postgrado</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3.5 h-3.5 rounded bg-slate-200 border border-slate-300"></span>
+          <span>Disponible</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2 text-slate-500 text-[11px]">
+        <i class="fa-regular fa-clock"></i>
+        <span>Bloques horarios de 45 / 60 min</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor de la Grilla de Horarios -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      
+      <!-- Tabla Desplazable -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-100/90 text-slate-700 text-xs border-b border-slate-200 uppercase tracking-wider font-semibold">
+              <th class="p-3 text-center w-28 bg-slate-200/80 sticky left-0 z-20 border-r border-slate-200">
+                Horario
+              </th>
+              <!-- Columnas de Recursos (Salas) -->
+              <th class="p-3 border-r border-slate-200 min-w-[150px]">
+                <div class="font-bold text-udec-navy flex items-center justify-between">
+                  <span>Sala Reuniones TI-1</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-normal px-1.5 py-0.5 rounded">Cap: 12</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-normal mt-0.5 flex items-center gap-2">
+                  <span title="Videoconferencia Zoom"><i class="fa-solid fa-video text-udec-blue"></i> Zoom</span>
+                  <span title="Aire Acondicionado"><i class="fa-solid fa-wind text-slate-400"></i> AC</span>
+                </div>
+              </th>
+
+              <th class="p-3 border-r border-slate-200 min-w-[150px]">
+                <div class="font-bold text-udec-navy flex items-center justify-between">
+                  <span>Laboratorio 101</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-normal px-1.5 py-0.5 rounded">Cap: 30</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-normal mt-0.5 flex items-center gap-2">
+                  <span><i class="fa-solid fa-desktop text-udec-blue"></i> 30 PCs</span>
+                  <span><i class="fa-solid fa-chalkboard-user text-slate-400"></i> Proyector</span>
+                </div>
+              </th>
+
+              <th class="p-3 border-r border-slate-200 min-w-[150px]">
+                <div class="font-bold text-udec-navy flex items-center justify-between">
+                  <span>Laboratorio 102</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-normal px-1.5 py-0.5 rounded">Cap: 25</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-normal mt-0.5 flex items-center gap-2">
+                  <span><i class="fa-solid fa-desktop text-udec-blue"></i> 25 PCs</span>
+                  <span><i class="fa-solid fa-wifi text-emerald-600"></i> Alta vel.</span>
+                </div>
+              </th>
+
+              <th class="p-3 border-r border-slate-200 min-w-[150px]">
+                <div class="font-bold text-udec-navy flex items-center justify-between">
+                  <span>Auditorio DTI</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-normal px-1.5 py-0.5 rounded">Cap: 60</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-normal mt-0.5 flex items-center gap-2">
+                  <span><i class="fa-solid fa-microphone text-udec-blue"></i> Audio</span>
+                  <span><i class="fa-solid fa-tv text-slate-400"></i> Telón Dual</span>
+                </div>
+              </th>
+
+              <th class="p-3 min-w-[150px]">
+                <div class="font-bold text-udec-navy flex items-center justify-between">
+                  <span>Sala Postgrado TI</span>
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-normal px-1.5 py-0.5 rounded">Cap: 15</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-normal mt-0.5 flex items-center gap-2">
+                  <span><i class="fa-solid fa-tv text-udec-blue"></i> Smart Screen</span>
+                  <span><i class="fa-solid fa-lock text-amber-500"></i> Docentes</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="scheduleGridBody" class="text-xs divide-y divide-slate-200">
+            <!-- Bloques horarios inyectados con JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer tabla MRBS con información complementaria -->
+      <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-udec-gold"></i>
+          <span>Haz clic en cualquier bloque libre para agendar una reserva directa.</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="refreshScheduleBtn" class="hover:text-udec-blue font-medium flex items-center gap-1 transition">
+            <i class="fa-solid fa-rotate text-[11px]"></i> Actualizar horario
+          </button>
+          <span>•</span>
+          <a href="#" class="hover:text-udec-blue font-medium">Descargar horario (PDF / iCal)</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal: Crear / Ver Reserva -->
+  <div id="bookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden transition-opacity">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 transform transition-all">
+      
+      <!-- Header Modal Institucional -->
+      <div class="bg-udec-navy text-white px-6 py-4 flex items-center justify-between border-b-2 border-udec-gold">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-udec-gold text-udec-navy flex items-center justify-center font-bold text-xs">
+            <i class="fa-regular fa-calendar-check"></i>
+          </div>
+          <div>
+            <h3 id="modalTitle" class="text-base font-bold text-white">Solicitud de Reserva</h3>
+            <p class="text-[11px] text-slate-300">Formulario estándar de asignación de espacios</p>
+          </div>
+        </div>
+        <button id="closeModalBtn" class="text-slate-300 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Formulario de Reserva -->
+      <form id="bookingForm" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Nombre / Título de la Reserva *</label>
+          <input type="text" id="bookingName" required placeholder="Ej: Clase INF-240 / Reunión Proyecto Fondef" 
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-udec-blue focus:border-udec-blue text-xs">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Sala / Recurso</label>
+            <select id="modalRoomSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs">
+              <option value="Sala Reuniones TI-1">Sala Reuniones TI-1 (12 pers.)</option>
+              <option value="Laboratorio 101">Laboratorio 101 (30 PCs)</option>
+              <option value="Laboratorio 102">Laboratorio 102 (25 PCs)</option>
+              <option value="Auditorio DTI">Auditorio DTI (60 pers.)</option>
+              <option value="Sala Postgrado TI">Sala Postgrado TI (15 pers.)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Categoría</label>
+            <select id="bookingCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs">
+              <option value="docencia">Docencia / Cátedra</option>
+              <option value="reunion">Reunión de Equipo TI</option>
+              <option value="mantenimiento">Mantenimiento / Soporte</option>
+              <option value="postgrado">Defensa Tesis / Postgrado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Hora Inicio</label>
+            <input type="time" id="bookingStart" value="09:00" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Hora Término</label>
+            <input type="time" id="bookingEnd" value="10:00" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Docente o Solicitante Responsable</label>
+          <input type="text" id="bookingUser" value="Prof. Carlos Contreras (ccontreras@udec.cl)" 
+                 class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-slate-600 text-xs" readonly>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Descripción / Requerimientos Técnicos</label>
+          <textarea id="bookingNotes" rows="2" placeholder="Ej: Requiere habilitar proyector, micrófonos inalámbricos y soporte de red cableada." 
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs"></textarea>
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-[11px] flex items-start gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
+          <span>Las reservas de laboratorios y auditorios quedan sujetas a verificación de compatibilidad por la jefatura TI de la Facultad.</span>
+        </div>
+
+        <!-- Acciones Modal -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-100 transition">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 bg-udec-blue hover:bg-udec-navy text-white rounded-lg font-semibold shadow-sm transition">
+            Confirmar Reserva
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notificación Toast Dinámica -->
+  <div id="toastMessage" class="fixed bottom-5 right-5 z-50 bg-udec-navy text-white px-4 py-3 rounded-xl shadow-lg border-l-4 border-udec-gold flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none text-xs">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toastText">Reserva guardada con éxito.</span>
+  </div>
+
+  <!-- Pie de página institucional Universidad de Concepción -->
+  <footer class="bg-udec-navy text-slate-400 text-xs mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <div class="space-y-1">
+          <p class="font-bold text-white text-sm">Dirección de Tecnologías de Información (DTI) - Universidad de Concepción</p>
+          <p class="text-slate-400 text-[11px]">Sistema Institucional de Gestión y Reserva de Recursos Físicos & Telemáticos</p>
+          <p class="text-slate-500 text-[10px]">Basado en el motor MRBS, personalizado bajo la normativa gráfica UdeC.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-4 text-[11px]">
+          <span class="flex items-center gap-1.5 text-slate-300">
+            <i class="fa-solid fa-headset text-udec-gold"></i>
+            Mesa de Ayuda: +56 41 220 4150
+          </span>
+          <span class="text-slate-600 hidden sm:inline">•</span>
+          <span class="flex items-center gap-1.5 text-slate-300">
+            <i class="fa-solid fa-envelope text-udec-gold"></i>
+            dti@udec.cl
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Configuración y datos iniciales de las salas
+    const rooms = [
+      { id: 'ti1', name: 'Sala Reuniones TI-1' },
+      { id: 'lab101', name: 'Laboratorio 101' },
+      { id: 'lab102', name: 'Laboratorio 102' },
+      { id: 'auditorio', name: 'Auditorio DTI' },
+      { id: 'postgrado', name: 'Sala Postgrado TI' }
+    ];
+
+    // Horarios estándar (MRBS timeslots)
+    const timeSlots = [
+      "08:15 - 09:00",
+      "09:15 - 10:00",
+      "10:15 - 11:00",
+      "11:15 - 12:00",
+      "12:15 - 13:00",
+      "13:15 - 14:00",
+      "14:15 - 15:00",
+      "15:15 - 16:00",
+      "16:15 - 17:00",
+      "17:15 - 18:00",
+      "18:15 - 19:00"
+    ];
+
+    // Estilos por categoría UdeC
+    const categoryStyles = {
+      docencia: {
+        bg: "bg-emerald-100",
+        border: "border-l-4 border-emerald-500",
+        text: "text-emerald-950",
+        badge: "bg-emerald-600 text-white",
+        icon: "fa-chalkboard-user"
+      },
+      reunion: {
+        bg: "bg-sky-100",
+        border: "border-l-4 border-sky-600",
+        text: "text-sky-950",
+        badge: "bg-sky-600 text-white",
+        icon: "fa-users"
+      },
+      mantenimiento: {
+        bg: "bg-amber-100",
+        border: "border-l-4 border-amber-500",
+        text: "text-amber-950",
+        badge: "bg-amber-500 text-white",
+        icon: "fa-wrench"
+      },
+      postgrado: {
+        bg: "bg-purple-100",
+        border: "border-l-4 border-purple-600",
+        text: "text-purple-950",
+        badge: "bg-purple-600 text-white",
+        icon: "fa-graduation-cap"
+      }
+    };
+
+    // Reservas de ejemplo precargadas (simulando base de datos MRBS)
+    let bookings = [
+      {
+        id: 1,
+        slotIndex: 1, // 09:15 - 10:00
+        roomId: 'ti1',
+        title: 'Comité Técnico DTI',
+        user: 'Rodrigo M. (DTI)',
+        category: 'reunion'
+      },
+      {
+        id: 2,
+        slotIndex: 2, // 10:15 - 11:00
+        roomId: 'lab101',
+        title: 'INF-221 Algoritmos I',
+        user: 'Prof. M. San Martín',
+        category: 'docencia'
+      },
+      {
+        id: 3,
+        slotIndex: 3, // 11:15 - 12:00
+        roomId: 'lab101',
+        title: 'INF-221 Algoritmos I (Taller)',
+        user: 'Prof. M. San Martín',
+        category: 'docencia'
+      },
+      {
+        id: 4,
+        slotIndex: 3, // 11:15 - 12:00
+        roomId: 'auditorio',
+        title: 'Charla Ciberseguridad UdeC',
+        user: 'SecOps Central',
+        category: 'postgrado'
+      },
+      {
+        id: 5,
+        slotIndex: 5, // 13:15 - 14:00
+        roomId: 'lab102',
+        title: 'Mantenimiento Red y Switch',
+        user: 'Soporte Redes',
+        category: 'mantenimiento'
+      },
+      {
+        id: 6,
+        slotIndex: 6, // 14:15 - 15:00
+        roomId: 'postgrado',
+        title: 'Defensa Tesis Magíster Cs.',
+        user: 'Dir. Postgrado',
+        category: 'postgrado'
+      },
+      {
+        id: 7,
+        slotIndex: 7, // 15:15 - 16:00
+        roomId: 'ti1',
+        title: 'Coordinación Campus Los Ángeles',
+        user: 'Equipo TI Los Ángeles',
+        category: 'reunion'
+      }
+    ];
+
+    // Variables para el modal
+    let activeSlotIndex = null;
+    let activeRoomId = null;
+
+    // Función para renderizar la grilla de reservas
+    function renderSchedule() {
+      const tbody = document.getElementById('scheduleGridBody');
+      tbody.innerHTML = '';
+
+      timeSlots.forEach((slot, slotIndex) => {
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-50/50 transition-colors";
+
+        // Columna de Horario (Sticky izquierda)
+        const timeCell = document.createElement('td');
+        timeCell.className = "p-2.5 text-center font-mono font-medium text-[11px] text-slate-600 bg-slate-50 sticky left-0 border-r border-slate-200";
+        timeCell.innerHTML = `<span class="inline-block px-1.5 py-0.5 rounded bg-slate-200/60">${slot}</span>`;
+        row.appendChild(timeCell);
+
+        // Columnas para cada Sala
+        rooms.forEach(room => {
+          const cell = document.createElement('td');
+          cell.className = "p-1.5 border-r border-slate-200 align-top relative min-h-[60px]";
+
+          // Buscar reserva existente para este slot y sala
+          const booking = bookings.find(b => b.slotIndex === slotIndex && b.roomId === room.id);
+
+          if (booking) {
+            const style = categoryStyles[booking.category] || categoryStyles.reunion;
+            cell.innerHTML = `
+              <div class="group relative ${style.bg} ${style.border} rounded-md p-2 shadow-xs cursor-pointer hover:shadow-md transition">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <span class="font-bold ${style.text} truncate text-[11px]">${booking.title}</span>
+                  <span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] ${style.badge}">
+                    <i class="fa-solid ${style.icon}"></i>
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-600 flex items-center gap-1">
+                  <i class="fa-regular fa-user text-[9px]"></i>
+                  <span class="truncate">${booking.user}</span>
+                </div>
+                <!-- Botón eliminar reserva pequeña -->
+                <button onclick="deleteBooking(event, ${booking.id})" title="Liberar horario" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-white/80 hover:bg-rose-50 text-rose-600 rounded p-1 text-[10px] shadow-xs transition">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            `;
+          } else {
+            // Celda disponible / Vacía
+            cell.innerHTML = `
+              <div onclick="openNewBooking(${slotIndex}, '${room.id}')" 
+                   class="h-full min-h-[46px] rounded-md border border-dashed border-slate-200 flex items-center justify-center text-slate-300 hover:text-udec-blue hover:border-udec-blue/40 hover:bg-sky-50/50 cursor-pointer transition group">
+                <span class="text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  <i class="fa-solid fa-plus text-[10px]"></i> Reservar
+                </span>
+              </div>
+            `;
+          }
+
+          row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Modal Handlers
+    const bookingModal = document.getElementById('bookingModal');
+    const bookingForm = document.getElementById('bookingForm');
+    const toast = document.getElementById('toastMessage');
+    const toastText = document.getElementById('toastText');
+
+    function showToast(msg) {
+      toastText.innerText = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    window.openNewBooking = function(slotIndex, roomId) {
+      activeSlotIndex = slotIndex;
+      activeRoomId = roomId;
+
+      const targetRoom = rooms.find(r => r.id === roomId);
+      if (targetRoom) {
+        document.getElementById('modalRoomSelect').value = targetRoom.name;
+      }
+
+      if (slotIndex !== undefined && slotIndex !== null) {
+        const [start, end] = timeSlots[slotIndex].split(' - ');
+        document.getElementById('bookingStart').value = start.trim();
+        document.getElementById('bookingEnd').value = end.trim();
+      }
+
+      document.getElementById('bookingName').value = '';
+      document.getElementById('bookingNotes').value = '';
+      bookingModal.classList.remove('hidden');
+    };
+
+    function closeModal() {
+      bookingModal.classList.add('hidden');
+      activeSlotIndex = null;
+      activeRoomId = null;
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+    document.getElementById('openNewBookingModalBtn').addEventListener('click', () => {
+      openNewBooking(1, 'ti1');
+    });
+
+    // Envío del Formulario
+    bookingForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('bookingName').value;
+      const roomName = document.getElementById('modalRoomSelect').value;
+      const category = document.getElementById('bookingCategory').value;
+      const selectedRoom = rooms.find(r => r.name === roomName) || rooms[0];
+
+      const newBooking = {
+        id: Date.now(),
+        slotIndex: activeSlotIndex !== null ? activeSlotIndex : 2,
+        roomId: selectedRoom.id,
+        title: title,
+        user: 'Prof. Carlos Contreras',
+        category: category
+      };
+
+      bookings.push(newBooking);
+      closeModal();
+      renderSchedule();
+      showToast(`Reserva creada para ${roomName}`);
+    });
+
+    // Eliminar reserva
+    window.deleteBooking = function(event, id) {
+      event.stopPropagation();
+      bookings = bookings.filter(b => b.id !== id);
+      renderSchedule();
+      showToast('Horario liberado correctamente');
+    };
+
+    // Navegación de vistas (Día / Semana / Mes)
+    const viewButtons = [document.getElementById('viewDayBtn'), document.getElementById('viewWeekBtn'), document.getElementById('viewMonthBtn')];
+    viewButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        viewButtons.forEach(b => {
+          b.className = "px-3 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition";
+        });
+        btn.className = "px-3 py-1 text-xs font-semibold rounded-md bg-white text-udec-navy shadow-sm transition";
+        showToast(`Vista cambiada a: ${btn.innerText}`);
+      });
+    });
+
+    // Botones de Fecha
+    document.getElementById('todayBtn').addEventListener('click', () => {
+      document.getElementById('currentDateDisplay').innerText = "Lunes, 19 de Octubre 2026";
+      showToast('Mostrando horario de hoy');
+    });
+
+    document.getElementById('refreshScheduleBtn').addEventListener('click', () => {
+      renderSchedule();
+      showToast('Horario actualizado desde el servidor');
+    });
+
+    // Inicialización al cargar la ventana
+    window.onload = function() {
+      renderSchedule();
+    };
+  </script>
+</body>
+</html>

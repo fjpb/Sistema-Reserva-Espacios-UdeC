@@ -1,0 +1,2124 @@
+/* ==========================================================================
+   TEMA INSTITUCIONAL UDEC - UNIVERSIDAD DE CONCEPCIÓN
+   Campus Los Ángeles | Unidad TI / DTI
+   Inspirado en: Demo nuevo html/sistema_de_reservas_udec_tema_institucional_mrbs.html
+   ========================================================================== */
+
+/* --- 1. RESET, BASE Y TIPOGRAFÍA --- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: #F8FAFC !important;
+  color: #1E293B !important;
+  font-size: 13px !important;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar estilizada institucional */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* --- 2. BARRA SUPERIOR INSTITUCIONAL (HEADER / BANNER) --- */
+header.banner,
+header.banner.udec-banner {
+  background-color: #002B49 !important;
+  border-bottom: 4px solid #E89D1E !important;
+  box-shadow: 0 4px 12px rgba(0, 43, 73, 0.15) !important;
+  padding: 0.65rem 1.75rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  color: #ffffff !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Contenedor del Logo e Identidad UdeC */
+.udec-brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.udec-logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.udec-logo-img {
+  height: 42px !important;
+  max-height: 42px !important;
+  width: auto !important;
+  margin: 0 !important;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.udec-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.udec-sub-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #CBD5E1;
+  line-height: 1.2;
+}
+
+.udec-main-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.udec-main-title a {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  letter-spacing: -0.01em;
+}
+
+.udec-main-title a:hover {
+  color: #E89D1E !important;
+}
+
+.udec-badge-version {
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(232, 157, 30, 0.22);
+  color: #FDE68A;
+  border: 1px solid rgba(232, 157, 30, 0.4);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Indicador de Período Académico */
+.udec-period-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: #E2E8F0;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.udec-period-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #34D399;
+  box-shadow: 0 0 6px #34D399;
+  display: inline-block;
+}
+
+/* Contenedor de Navegación del Banner */
+.banner nav.container,
+.banner nav.udec-nav-container,
+.udec-nav-container {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+}
+
+.udec-goto-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  order: 1 !important;
+}
+
+.udec-period-badge {
+  order: 2 !important;
+}
+
+.udec-menu-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  order: 3 !important;
+}
+
+.udec-nav-link,
+header.banner nav.menu a {
+  color: #E2E8F0 !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 6px 11px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.udec-nav-link:hover,
+header.banner nav.menu a:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Usuario, Login y Logout */
+.udec-logon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.udec-user-btn,
+#show_my_entries input[type="submit"] {
+  background: #E89D1E !important;
+  color: #002B49 !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  border-radius: 6px !important;
+  padding: 5px 12px !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.15s ease !important;
+}
+
+.udec-user-btn:hover,
+#show_my_entries input[type="submit"]:hover {
+  background: #c98412 !important;
+  color: #ffffff !important;
+}
+
+.udec-logon-btn,
+form.udec-auth-form input[type="submit"] {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 6px !important;
+  padding: 5px 11px !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.udec-logon-btn:hover,
+form.udec-auth-form input[type="submit"]:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #FECACA !important;
+}
+
+/* Notificación de Pendientes */
+.notification {
+  border-radius: 9999px !important;
+  padding: 3px 8px !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+.notification.attention {
+  background-color: #E89D1E !important;
+  color: #002B49 !important;
+}
+
+/* Buscador en la cabecera */
+.udec-search-box input[type="search"] {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  transition: all 0.2s ease !important;
+}
+.udec-search-box input[type="search"]::placeholder {
+  color: #CBD5E1 !important;
+}
+.udec-search-box input[type="search"]:focus {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: #E89D1E !important;
+  outline: none !important;
+}
+
+/* --- 3. PANTALLA COMPLETA Y CONTROL DE VISTAS --- */
+.index :not(.simple) + .contents,
+.contents,
+.udec-contents {
+  display: block !important;
+  float: none !important;
+  padding: 1rem 1.75rem 3rem 1.75rem !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ocultar mini-calendarios laterales para dejar la pantalla completa */
+.minicalendars,
+.minicalendars.formed,
+div.minicalendars,
+#dwm_header_left {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.view_container {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  float: none !important;
+  box-sizing: border-box !important;
+}
+
+.table_container {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  margin: 0.5rem 0 1.5rem 0 !important;
+  box-sizing: border-box !important;
+  clear: both !important;
+}
+
+table.dwm_main,
+table#day_main,
+table#week_main,
+table#month_main {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Encabezado de fecha institucional bien proporcionado */
+.date_heading {
+  text-align: center !important;
+  margin: 0.25rem 0 1rem 0 !important;
+}
+
+.date_heading h2,
+h2.date {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #002B49 !important;
+  letter-spacing: -0.01em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Control del año en calendarios e inputs datepicker para que no se vea desproporcionado */
+.flatpickr-current-month,
+.flatpickr-current-month .cur-month,
+.flatpickr-current-month input.cur-year,
+.cur-year,
+.numInputWrapper input.cur-year,
+.numInputWrapper {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  height: auto !important;
+  max-height: 24px !important;
+  line-height: 1.2 !important;
+}
+
+/* Barra de controles (Área, Recinto, Vistas Día/Semana/Mes) */
+nav.main_calendar,
+#dwm_header,
+.dwm_header {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  padding: 0.75rem 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+nav.main_calendar select,
+nav.main_calendar input[type="text"],
+nav.main_calendar input.date,
+#dwm_header select,
+#dwm_header input[type="text"],
+#dwm_header input.date {
+  background: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #1E293B !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+nav.main_calendar select:focus,
+nav.main_calendar input:focus,
+#dwm_header select:focus,
+#dwm_header input:focus {
+  border-color: #003865 !important;
+  box-shadow: 0 0 0 3px rgba(0, 56, 101, 0.15) !important;
+  outline: none !important;
+}
+
+/* Enlaces de vistas (Día, Semana, Mes) */
+.viewicon,
+#view_selector a,
+.navigation_header a,
+nav.view a {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+  display: inline-block;
+  margin: 0 2px;
+}
+
+.viewicon:hover,
+#view_selector a:hover,
+.navigation_header a:hover,
+nav.view a:hover {
+  background: #E2E8F0 !important;
+  color: #002B49 !important;
+}
+
+.viewicon.selected,
+#view_selector a.selected,
+nav.view a.selected {
+  background: #003865 !important;
+  color: #ffffff !important;
+  border-color: #002B49 !important;
+  box-shadow: 0 1px 3px rgba(0, 43, 73, 0.2) !important;
+}
+
+/* Botones de navegación Anterior / Hoy / Siguiente */
+nav.arrow a {
+  background: #F8FAFC !important;
+  color: #002B49 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+}
+nav.arrow a:hover {
+  background: #E2E8F0 !important;
+}
+
+/* --- 4. TABLA PRINCIPAL DE HORARIOS (DWM_MAIN) --- */
+.dwm_main,
+#dwm_main {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+/* Cabeceras de columnas (Recintos / Días) */
+.dwm_main th,
+#dwm_main th {
+  background: #F8FAFC !important;
+  color: #002B49 !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  padding: 10px 12px !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  border-right: 1px solid #E2E8F0 !important;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.dwm_main th a {
+  color: #002B49 !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+}
+.dwm_main th a:hover {
+  color: #E89D1E !important;
+}
+
+/* Columna de Horas / Módulos (izquierda) */
+.dwm_main tbody th,
+#dwm_main tbody th {
+  background: #F1F5F9 !important;
+  color: #002B49 !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  padding: 8px 10px !important;
+  border-right: 2px solid #CBD5E1 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  text-align: center !important;
+}
+
+/* Celdas de la grilla */
+.dwm_main td,
+#dwm_main td {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: 1px solid #E2E8F0 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  padding: 3px !important;
+  min-height: 2.8em !important;
+  background-color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+/* Celda Libre / Nueva Reserva */
+.dwm_main td.new_booking,
+.dwm_main td.empty {
+  cursor: pointer;
+}
+.dwm_main td.new_booking:hover,
+.dwm_main td.empty:hover {
+  background-color: #F0F9FF !important;
+}
+
+/* Bloques de Reserva dentro de las Celdas */
+.dwm_main .booking,
+.dwm_main .booked a,
+.dwm_main .booked.multiply .booking,
+div.booking {
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  line-height: 1.3 !important;
+  text-decoration: none !important;
+  display: block;
+  transition: all 0.15s ease !important;
+}
+
+.dwm_main .booking:hover,
+.dwm_main .booked a:hover,
+div.booking:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+  filter: brightness(0.97);
+}
+
+/* --- 5. LEYENDA INSTITUCIONAL DE TIPOS / CARRERAS (#COLOR_KEY) --- */
+#color_key,
+.color_key {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  padding: 1rem 1.25rem !important;
+  margin-top: 1.5rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.color_key > div,
+#color_key td {
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: #1E293B !important;
+}
+
+/* --- 6. PALETA DE COLORES COMPLETA PARA TODAS LAS CARRERAS Y ÁREAS (A - Y) --- */
+.A, .color_key > div.A, td.A, div.A, .dwm_main td.A .booking, .dwm_main .booked a.A, td.booked.A div.booking { background-color: #92D050 !important; color: #1E293B !important; }
+.B, .color_key > div.B, td.B, div.B, .dwm_main td.B .booking, .dwm_main .booked a.B, td.booked.B div.booking { background-color: #9999FF !important; color: #1E293B !important; }
+.C, .color_key > div.C, td.C, div.C, .dwm_main td.C .booking, .dwm_main .booked a.C, td.booked.C div.booking { background-color: #F1A983 !important; color: #1E293B !important; }
+.D, .color_key > div.D, td.D, div.D, .dwm_main td.D .booking, .dwm_main .booked a.D, td.booked.D div.booking { background-color: #94DCF8 !important; color: #1E293B !important; }
+.E, .color_key > div.E, td.E, div.E, .dwm_main td.E .booking, .dwm_main .booked a.E, td.booked.E div.booking { background-color: #CBD5E1 !important; color: #1E293B !important; }
+.F, .color_key > div.F, td.F, div.F, .dwm_main td.F .booking, .dwm_main .booked a.F, td.booked.F div.booking { background-color: #A9D08E !important; color: #1E293B !important; }
+.G, .color_key > div.G, td.G, div.G, .dwm_main td.G .booking, .dwm_main .booked a.G, td.booked.G div.booking { background-color: #FEF08A !important; color: #1E293B !important; }
+.H, .color_key > div.H, td.H, div.H, .dwm_main td.H .booking, .dwm_main .booked a.H, td.booked.H div.booking { background-color: #F2CEEF !important; color: #1E293B !important; }
+.I, .color_key > div.I, td.I, div.I, .dwm_main td.I .booking, .dwm_main .booked a.I, td.booked.I div.booking { background-color: #6EE7B7 !important; color: #1E293B !important; }
+.J, .color_key > div.J, td.J, div.J, .dwm_main td.J .booking, .dwm_main .booked a.J, td.booked.J div.booking { background-color: #6FF99D !important; color: #1E293B !important; }
+.K, .color_key > div.K, td.K, div.K, .dwm_main td.K .booking, .dwm_main .booked a.K, td.booked.K div.booking { background-color: #FFC000 !important; color: #1E293B !important; }
+.L, .color_key > div.L, td.L, div.L, .dwm_main td.L .booking, .dwm_main .booked a.L, td.booked.L div.booking { background-color: #6DE3FB !important; color: #1E293B !important; }
+.M, .color_key > div.M, td.M, div.M, .dwm_main td.M .booking, .dwm_main .booked a.M, td.booked.M div.booking { background-color: #F472B6 !important; color: #1E293B !important; }
+.N, .color_key > div.N, td.N, div.N, .dwm_main td.N .booking, .dwm_main .booked a.N, td.booked.N div.booking { background-color: #FACC15 !important; color: #1E293B !important; }
+.O, .color_key > div.O, td.O, div.O, .dwm_main td.O .booking, .dwm_main .booked a.O, td.booked.O div.booking { background-color: #C084FC !important; color: #1E293B !important; }
+.P, .color_key > div.P, td.P, div.P, .dwm_main td.P .booking, .dwm_main .booked a.P, td.booked.P div.booking { background-color: #FBBF24 !important; color: #1E293B !important; }
+.Q, .color_key > div.Q, td.Q, div.Q, .dwm_main td.Q .booking, .dwm_main .booked a.Q, td.booked.Q div.booking { background-color: #60A5FA !important; color: #1E293B !important; }
+.R, .color_key > div.R, td.R, div.R, .dwm_main td.R .booking, .dwm_main .booked a.R, td.booked.R div.booking { background-color: #86EFAC !important; color: #1E293B !important; }
+.S, .color_key > div.S, td.S, div.S, .dwm_main td.S .booking, .dwm_main .booked a.S, td.booked.S div.booking { background-color: #2DD4BF !important; color: #1E293B !important; }
+.T, .color_key > div.T, td.T, div.T, .dwm_main td.T .booking, .dwm_main .booked a.T, td.booked.T div.booking { background-color: #A3E635 !important; color: #1E293B !important; }
+.U, .color_key > div.U, td.U, div.U, .dwm_main td.U .booking, .dwm_main .booked a.U, td.booked.U div.booking { background-color: #FB7185 !important; color: #1E293B !important; }
+.V, .color_key > div.V, td.V, div.V, .dwm_main td.V .booking, .dwm_main .booked a.V, td.booked.V div.booking { background-color: #38BDF8 !important; color: #1E293B !important; }
+.X, .color_key > div.X, td.X, div.X, .dwm_main td.X .booking, .dwm_main .booked a.X, td.booked.X div.booking { background-color: #4ADE80 !important; color: #1E293B !important; }
+.Y, .color_key > div.Y, td.Y, div.Y, .dwm_main td.Y .booking, .dwm_main .booked a.Y, td.booked.Y div.booking { background-color: #EAB308 !important; color: #1E293B !important; }
+
+/* Enlaces y textos dentro de las etiquetas de carreras y reservas */
+.color_key > div a,
+.color_key > div:link,
+.color_key > div:visited,
+.dwm_main .booking a,
+.dwm_main .booked a,
+.dwm_main td a {
+  color: #1E293B !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+/* --- 7. FORMULARIOS, MODALES Y BOTONES --- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="date"],
+select,
+textarea {
+  background: #ffffff !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
+  font-size: 13px !important;
+  color: #1E293B !important;
+  transition: all 0.15s ease !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #003865 !important;
+  box-shadow: 0 0 0 3px rgba(0, 56, 101, 0.15) !important;
+  outline: none !important;
+}
+
+/* Botones principales de acción */
+input[type="submit"],
+button[type="submit"],
+.btn-primary {
+  background: linear-gradient(135deg, #003865 0%, #002B49 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(0, 43, 73, 0.2) !important;
+  transition: all 0.15s ease !important;
+}
+
+input[type="submit"]:hover,
+button[type="submit"]:hover,
+.btn-primary:hover {
+  background: linear-gradient(135deg, #002B49 0%, #001A2C 100%) !important;
+  box-shadow: 0 4px 8px rgba(0, 43, 73, 0.28) !important;
+  transform: translateY(-1px);
+}
+
+/* Botones secundarios / Cancelar */
+input[type="button"],
+input[type="reset"],
+.btn-secondary {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+input[type="button"]:hover,
+input[type="reset"]:hover,
+.btn-secondary:hover {
+  background: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+/* Formularios de edición (edit_entry, admin) */
+.form_general {
+  background: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+  padding: 1.75rem !important;
+  max-width: 900px;
+  margin: 1.5rem auto !important;
+}
+
+.form_general legend {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #002B49 !important;
+  padding: 0 8px !important;
+}
+
+/* Limpieza de elementos antiguos innecesarios */
+.ui-resizable-handle {
+  display: none !important;
+}
+
+/* ==========================================================================
+   8. OPTIMIZACIÓN RESPONSIVA Y MÓVIL (SMARTPHONES Y TABLETS)
+   ========================================================================== */
+@media screen and (max-width: 1024px) {
+  .contents,
+  .udec-contents {
+    padding: 0.75rem 1rem 2rem 1rem !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* Cabecera compacta y táctil */
+  header.banner,
+  header.banner.udec-banner {
+    padding: 0.65rem 0.85rem !important;
+    gap: 0.65rem !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .udec-brand-container {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .udec-logo-img {
+    height: 32px !important;
+    max-height: 32px !important;
+  }
+
+  .udec-sub-title {
+    font-size: 9px !important;
+  }
+
+  .udec-main-title a {
+    font-size: 14.5px !important;
+  }
+
+  .udec-badge-version {
+    font-size: 9px !important;
+    padding: 1px 5px !important;
+  }
+
+  .udec-period-badge {
+    display: none !important; /* Ahorra espacio vertical crítico en móviles */
+  }
+
+  .udec-nav-container {
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+
+  .udec-menu-wrap {
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+  }
+
+  .udec-nav-link,
+  header.banner nav.menu a {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
+
+  /* Barra de control y navegación responsive */
+  #dwm_header,
+  .dwm_header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+
+  #dwm_header form,
+  #dwm_header select,
+  #dwm_header input.date {
+    width: 100% !important;
+    min-height: 40px !important;
+  }
+
+  nav.view,
+  nav.arrow,
+  #view_selector {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 4px !important;
+  }
+
+  .viewicon,
+  nav.view a,
+  nav.arrow a {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+    min-height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Contenedor con scroll horizontal táctil suave */
+  .view_container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+  }
+
+  .dwm_main,
+  #dwm_main {
+    min-width: 680px !important; /* Previene colapso de columnas para que el contenido sea legible */
+    border: none !important;
+  }
+
+  /* Columna de módulos/horas fija a la izquierda (Sticky Column) al hacer scroll horizontal */
+  .dwm_main tbody th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 25 !important;
+    background-color: #F1F5F9 !important;
+    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .dwm_main thead th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    background-color: #F8FAFC !important;
+    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Celdas y reservas en móvil */
+  .dwm_main th,
+  #dwm_main th {
+    padding: 8px 6px !important;
+    font-size: 11.5px !important;
+  }
+
+  .dwm_main td,
+  #dwm_main td {
+    padding: 2px !important;
+    min-height: 3em !important;
+  }
+
+  .dwm_main .booking,
+  .dwm_main .booked a,
+  div.booking {
+    font-size: 10.5px !important;
+    padding: 3px 5px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Leyenda de carreras táctil */
+  #color_key,
+  .color_key {
+    padding: 0.75rem !important;
+    gap: 6px !important;
+    font-size: 11px !important;
+  }
+
+  .color_key > div,
+  #color_key td {
+    padding: 3px 7px !important;
+    font-size: 10.5px !important;
+  }
+
+  /* Formularios en pantalla táctil (evita auto-zoom de iOS Safari con font-size >= 16px) */
+  .form_general {
+    padding: 1rem !important;
+    margin: 0.5rem 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .form_general input,
+  .form_general select,
+  .form_general textarea,
+  .form_general button {
+    font-size: 16px !important;
+    min-height: 42px !important;
+  }
+}
+
+/* ==========================================================================
+   9. HOVER CARDS INSTITUCIONALES (TOOLTIPS FLOTANTES UDEC)
+   ========================================================================== */
+#udecHoverCard {
+  position: absolute;
+  z-index: 99999;
+  width: 310px;
+  max-width: 90vw;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -4px rgba(0, 43, 73, 0.22), 0 8px 10px -6px rgba(0, 43, 73, 0.12);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Inter', sans-serif;
+}
+
+#udecHoverCard.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.udec-hc-header {
+  background: #002B49;
+  padding: 8px 12px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #E89D1E;
+}
+
+.udec-hc-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1E293B;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.udec-hc-header-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #CBD5E1;
+}
+
+.udec-hc-body {
+  padding: 10px 14px 12px 14px;
+}
+
+.udec-hc-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #002B49;
+  line-height: 1.35;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.udec-hc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #334155;
+}
+
+.udec-hc-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.udec-hc-icon {
+  width: 15px;
+  text-align: center;
+  color: #003865;
+  font-size: 11.5px;
+  flex-shrink: 0;
+}
+
+.udec-hc-val {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.udec-hc-desc {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #E2E8F0;
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.35;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   10. LEYENDA INTERACTIVA Y FILTRADO POR CARRERA (OPCIÓN B)
+   ========================================================================== */
+.udec-legend-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.udec-legend-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #002B49;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.udec-reset-filter {
+  background: #002B49 !important;
+  color: #ffffff !important;
+  border: 1px solid #E89D1E !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 43, 73, 0.15) !important;
+  transition: all 0.15s ease !important;
+}
+
+.udec-reset-filter:hover {
+  background: #003865 !important;
+  box-shadow: 0 3px 6px rgba(0, 43, 73, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* Badges interactivos en la leyenda */
+.color_key > div:not(.udec-legend-header) {
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.color_key > div:not(.udec-legend-header):hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14) !important;
+  filter: brightness(0.96) !important;
+}
+
+/* Badge seleccionado activamente */
+.color_key > div.active-filter {
+  outline: 2px solid #002B49 !important;
+  outline-offset: 2px !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 6px 14px rgba(0, 43, 73, 0.28) !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.color_key > div.active-filter::after {
+  content: "✓";
+  display: inline-block;
+  font-weight: 800;
+  margin-left: 2px;
+  font-size: 10px;
+}
+
+/* Atenuación del resto de la leyenda cuando un badge está activo */
+.color_key.color_key_dimmed > div:not(.udec-legend-header):not(.active-filter) {
+  opacity: 0.38 !important;
+  filter: grayscale(40%) !important;
+}
+
+.color_key.color_key_dimmed > div:not(.udec-legend-header):not(.active-filter):hover {
+  opacity: 0.85 !important;
+  filter: none !important;
+}
+
+/* Efectos en la grilla horaria al filtrar (Día, Semana y Mes) */
+.dwm_main .booking.dimmed-by-filter,
+.dwm_main .booked a.dimmed-by-filter,
+.dwm_main td.booked.dimmed-by-filter,
+.dwm_main .booking_list > div.dimmed-by-filter,
+.dwm_main .booking_list a.dimmed-by-filter,
+#month_main .booking.dimmed-by-filter,
+.dimmed-by-filter {
+  opacity: 0.12 !important;
+  filter: grayscale(80%) !important;
+  transform: scale(0.96) !important;
+  box-shadow: none !important;
+  transition: all 0.22s ease !important;
+}
+
+.dwm_main .booking.highlighted-by-filter,
+.dwm_main .booked a.highlighted-by-filter,
+.dwm_main td.booked.highlighted-by-filter,
+.dwm_main .booking_list > div.highlighted-by-filter,
+.dwm_main .booking_list a.highlighted-by-filter,
+#month_main .booking.highlighted-by-filter,
+.highlighted-by-filter {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: scale(1.04) !important;
+  z-index: 85 !important;
+  box-shadow: 0 0 0 2px #002B49, 0 8px 18px rgba(0, 43, 73, 0.3) !important;
+  animation: udecPulseBadge 1.8s infinite ease-in-out !important;
+  transition: all 0.22s ease !important;
+}
+
+/* Vista de Mes (Month View) - Estilos Modernos Institucionales */
+#month_main .booking_list {
+  padding: 4px 2px;
+  max-height: 120px;
+}
+
+#month_main .booking_list > div,
+#month_main .booking {
+  border-radius: 4px !important;
+  margin-bottom: 3px !important;
+  padding: 2px 5px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#month_main .booking_list a {
+  color: #1E293B !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+
+@keyframes udecPulseBadge {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #002B49, 0 6px 14px rgba(0, 43, 73, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 3px #E89D1E, 0 10px 22px rgba(232, 157, 30, 0.42);
+  }
+}
+
+/* ==========================================================================
+   11. INDICADOR DE HORA ACTUAL EN VIVO ("AHORA MISMO") Y COLUMNA DE HOY
+   ========================================================================== */
+.table_container {
+  position: relative !important;
+}
+
+/* Resaltado elegante de la columna de HOY */
+thead th.today {
+  background-color: rgba(0, 56, 101, 0.08) !important;
+  color: #002B49 !important;
+  font-weight: 800 !important;
+  border-bottom: 3px solid #E89D1E !important;
+}
+
+thead th.today a {
+  color: #002B49 !important;
+  font-weight: 800 !important;
+}
+
+tbody td.today {
+  background-color: rgba(0, 56, 101, 0.02) !important;
+}
+
+/* Contenedor flotante de la línea temporal */
+.udec-current-time-indicator {
+  position: absolute;
+  z-index: 35;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.udec-time-badge {
+  background: #E11D48 !important; /* Rojo carmesí vibrante estilo Google Calendar */
+  color: #ffffff !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 1.5px 7px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.45) !important;
+  white-space: nowrap !important;
+  transform: translateY(-50%) !important;
+  margin-right: -2px !important;
+  z-index: 2 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.udec-time-dot {
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+  background-color: #ffffff !important;
+  display: inline-block !important;
+  animation: udecPulseDot 1.4s infinite !important;
+}
+
+@keyframes udecPulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+}
+
+.udec-time-line {
+  flex-grow: 1;
+  height: 2px !important;
+  background: #E11D48 !important;
+  box-shadow: 0 1px 4px rgba(225, 29, 72, 0.4) !important;
+  transform: translateY(-50%) !important;
+  border-radius: 1px !important;
+}
+
+/* ==========================================================================
+   PANEL ADMINISTRATIVO: GESTIÓN VISUAL DE TIPOS Y COLORES (UdeC)
+   ========================================================================== */
+.udec-admin-types-wrapper {
+  max-width: 1100px;
+  margin: 25px auto 40px auto;
+  padding: 0 16px;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+}
+
+.udec-admin-types-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 43, 73, 0.08);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+}
+
+.udec-admin-header {
+  background: #002B49;
+  border-bottom: 3px solid #E89D1E;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.udec-admin-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+}
+
+.udec-admin-header-title i {
+  font-size: 22px;
+  color: #E89D1E;
+}
+
+.udec-admin-header-title h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.udec-admin-badge {
+  background: rgba(232, 157, 30, 0.18);
+  color: #F8FAFC;
+  border: 1px solid #E89D1E;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.udec-admin-body {
+  padding: 24px;
+}
+
+.udec-alert {
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.udec-alert-success {
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #166534;
+}
+
+.udec-alert-success i {
+  font-size: 18px;
+  color: #15803D;
+}
+
+.udec-alert-error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.udec-alert-error i {
+  font-size: 18px;
+  color: #DC2626;
+}
+
+.udec-admin-instructions {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #002B49;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.udec-admin-instructions i {
+  font-size: 18px;
+  color: #002B49;
+  margin-top: 2px;
+}
+
+.udec-admin-instructions p {
+  margin: 4px 0 0 0;
+  color: #64748B;
+}
+
+.udec-table-container {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.udec-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.udec-admin-table th {
+  background: #F1F5F9;
+  color: #002B49;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 14px;
+  border-bottom: 2px solid #CBD5E1;
+  white-space: nowrap;
+}
+
+.udec-admin-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+
+.udec-admin-table tr:hover {
+  background: #F8FAFC;
+}
+
+.type-code-input {
+  width: 50px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #002B49;
+  padding: 6px 4px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.type-code-input:focus,
+.type-name-input:focus,
+.type-color-hex:focus {
+  border-color: #002B49;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 43, 73, 0.12);
+}
+
+.type-name-input {
+  width: 100%;
+  min-width: 220px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #1E293B;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 6px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.color-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-color-picker {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border: none;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.type-color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.type-color-picker::-webkit-color-swatch {
+  border: 2px solid #CBD5E1;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.type-color-hex {
+  width: 85px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 4px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 6px;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.type-preview-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+/* Switch / Toggle Activo */
+.udec-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+
+.udec-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.udec-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #CBD5E1;
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+
+.udec-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.udec-switch input:checked + .udec-slider {
+  background-color: #10B981;
+}
+
+.udec-switch input:checked + .udec-slider:before {
+  transform: translateX(20px);
+}
+
+.btn-remove-row {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-row:hover {
+  color: #EF4444;
+  background: #FEE2E2;
+}
+
+.udec-add-row-bar {
+  margin-bottom: 24px;
+}
+
+.udec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.udec-btn-add {
+  background: #F1F5F9;
+  color: #002B49;
+  border: 1.5px dashed #002B49;
+}
+
+.udec-btn-add:hover {
+  background: #002B49;
+  color: #ffffff;
+}
+
+.udec-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.udec-actions-left,
+.udec-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.udec-btn-primary {
+  background: #002B49;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 43, 73, 0.2);
+}
+
+.udec-btn-primary:hover {
+  background: #003865;
+  box-shadow: 0 4px 10px rgba(0, 43, 73, 0.3);
+  transform: translateY(-1px);
+}
+
+.udec-btn-secondary {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
+.udec-btn-secondary:hover {
+  background: #E2E8F0;
+  color: #1E293B;
+}
+
+.udec-btn-outline {
+  background: #ffffff;
+  color: #002B49;
+  border: 1.5px solid #002B49;
+}
+
+.udec-btn-outline:hover {
+  background: #002B49;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   PANEL ADMINISTRATIVO: RESERVAS PENDIENTES Y SIN CONFIRMAR (UdeC)
+   ========================================================================== */
+.udec-pending-wrapper {
+  max-width: 1280px;
+}
+
+.udec-pending-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #E89D1E;
+  color: #002B49;
+  font-size: 10.5px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  margin-left: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  line-height: 1;
+}
+
+.udec-pending-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.udec-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+
+.udec-kpi-card:hover {
+  border-color: #94A3B8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 43, 73, 0.06);
+}
+
+.udec-kpi-card.active {
+  background: #ffffff;
+  border-color: #002B49;
+  border-left: 5px solid #E89D1E;
+  box-shadow: 0 4px 14px rgba(0, 43, 73, 0.09);
+}
+
+.udec-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.udec-kpi-icon.total {
+  background: rgba(0, 43, 73, 0.1);
+  color: #002B49;
+}
+
+.udec-kpi-icon.single {
+  background: rgba(232, 157, 30, 0.16);
+  color: #B45309;
+}
+
+.udec-kpi-icon.series {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.udec-kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.udec-kpi-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: #002B49;
+  line-height: 1.1;
+}
+
+.udec-kpi-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 3px;
+}
+
+/* Barra de Filtros */
+.udec-pending-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+
+.udec-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.udec-filter-group label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.udec-filter-group select,
+.udec-filter-group input[type="text"] {
+  padding: 7px 12px;
+  font-size: 13px;
+  color: #1E293B;
+  background: #ffffff;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 7px;
+  outline: none;
+  font-family: inherit;
+}
+
+.udec-filter-group select:focus,
+.udec-filter-group input[type="text"]:focus {
+  border-color: #002B49;
+  box-shadow: 0 0 0 3px rgba(0, 43, 73, 0.1);
+}
+
+.udec-filter-search {
+  flex-grow: 1;
+  min-width: 240px;
+}
+
+.udec-filter-search input[type="text"] {
+  width: 100%;
+}
+
+/* Barra de acciones en lote */
+.udec-bulk-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.udec-bulk-left,
+.udec-bulk-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.udec-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  cursor: pointer;
+  margin: 0;
+}
+
+.udec-selected-count {
+  background: #002B49;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.udec-btn-confirm-bulk {
+  background: #10B981;
+  color: #ffffff;
+  font-size: 12.5px;
+  padding: 7px 14px;
+}
+
+.udec-btn-confirm-bulk:hover {
+  background: #059669;
+}
+
+.udec-btn-delete-bulk {
+  background: #EF4444;
+  color: #ffffff;
+  font-size: 12.5px;
+  padding: 7px 14px;
+}
+
+.udec-btn-delete-bulk:hover {
+  background: #DC2626;
+}
+
+/* Badges y filas de la tabla de pendientes */
+.udec-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.udec-kind-badge.single {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.udec-kind-badge.series {
+  background: #E0F2FE;
+  color: #075985;
+  border: 1px solid #BAE6FD;
+}
+
+.udec-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.udec-pending-title a {
+  font-size: 14px;
+  font-weight: 700;
+  color: #002B49 !important;
+  text-decoration: none;
+}
+
+.udec-pending-title a:hover {
+  color: #E89D1E !important;
+  text-decoration: underline;
+}
+
+.udec-pending-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.udec-pending-user {
+  font-size: 12px;
+  color: #475569;
+}
+
+.udec-pending-desc {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.udec-pending-room {
+  font-weight: 700;
+  color: #1E293B;
+  font-size: 13px;
+}
+
+.udec-pending-area {
+  font-size: 11.5px;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.udec-pending-date {
+  font-weight: 700;
+  color: #002B49;
+  font-size: 12.5px;
+}
+
+.udec-pending-time {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 3px;
+}
+
+.udec-pending-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.udec-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+}
+
+.udec-action-btn.confirm {
+  background: #10B981;
+  color: #ffffff !important;
+}
+
+.udec-action-btn.confirm:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.udec-action-btn.calendar {
+  background: #F1F5F9;
+  color: #002B49 !important;
+  border-color: #CBD5E1;
+}
+
+.udec-action-btn.calendar:hover {
+  background: #002B49;
+  color: #ffffff !important;
+}
+
+.udec-action-btn.detail {
+  background: #F1F5F9;
+  color: #475569 !important;
+  border-color: #CBD5E1;
+}
+
+.udec-action-btn.detail:hover {
+  background: #E2E8F0;
+  color: #1E293B !important;
+}
+
+.udec-action-btn.reject {
+  background: #FEF2F2;
+  color: #DC2626 !important;
+  border-color: #FECACA;
+}
+
+.udec-action-btn.reject:hover {
+  background: #EF4444;
+  color: #ffffff !important;
+}
+
+.udec-pending-empty {
+  text-align: center;
+  padding: 48px 20px;
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 12px;
+  color: #475569;
+}
+
+.udec-pending-empty i {
+  font-size: 42px;
+  color: #10B981;
+  margin-bottom: 12px;
+}
+
+.udec-pending-empty h3 {
+  margin: 0 0 6px 0;
+  font-size: 17px;
+  color: #002B49;
+}
+
+.udec-pending-empty p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #64748B;
+}
+
+/* ==========================================================================
+   14. CINTILLO DE FICHA TÉCNICA DE RECINTO (AFORO Y EQUIPAMIENTO)
+   ========================================================================== */
+.udec-room-meta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  background: linear-gradient(90deg, #F8FAFC 0%, #F1F5F9 100%);
+  border: 1px solid #CBD5E1;
+  border-left: 4px solid #E89D1E;
+  border-radius: 10px;
+  padding: 9px 16px;
+  margin: 0 0 10px 0;
+  box-shadow: 0 1px 3px rgba(0, 43, 73, 0.05);
+}
+
+.udec-rmb-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #002B49;
+}
+
+.udec-rmb-title i {
+  color: #E89D1E;
+  font-size: 14px;
+}
+
+.udec-rmb-title strong {
+  font-weight: 700;
+  color: #002B49;
+}
+
+.udec-rmb-pills {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.udec-rmb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.udec-rmb-cap {
+  background: #002B49;
+  color: #FFFFFF;
+}
+
+.udec-rmb-cap i {
+  color: #E89D1E;
+}
+
+.udec-rmb-type {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  font-weight: 600;
+}
+
+.udec-rmb-equip {
+  background: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+}
+
+.udec-rmb-equip i {
+  color: #0284C7;
+}
+
+
+
+
+
+
+
+
+

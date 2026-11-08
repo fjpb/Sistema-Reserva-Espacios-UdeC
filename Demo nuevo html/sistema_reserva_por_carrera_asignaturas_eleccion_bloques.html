@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Automatizado de Reservas Semestrales - Universidad de Concepción</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            udec: {
+              navy: '#002B49',
+              blue: '#003865',
+              blueLight: '#0d4e8a',
+              gold: '#E89D1E',
+              goldHover: '#c98412',
+              ice: '#F4F7FA',
+              border: '#E2E8F0',
+              accent: '#2563eb'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .badge-subtle { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Barra superior institucional -->
+  <header class="bg-udec-navy text-white border-b-4 border-udec-gold shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo & Titulo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-udec-gold flex items-center justify-center font-bold text-udec-navy text-xl shadow-inner">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs uppercase tracking-wider font-semibold text-slate-300">Universidad de Concepción</span>
+            <div class="flex items-center gap-2">
+              <span class="text-base sm:text-lg font-bold text-white tracking-tight">Portal Planificación Docente & Reservas</span>
+              <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded font-mono">1er Semestre 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Perfil Docente / Jefe de Carrera -->
+        <div class="flex items-center gap-3">
+          <div class="hidden md:flex flex-col text-right text-xs">
+            <span class="text-slate-300">Autenticado vía SSO UdeC</span>
+            <span class="font-semibold text-udec-gold">Rol: Jefatura de Carrera / Docente</span>
+          </div>
+
+          <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div class="w-9 h-9 rounded-full bg-udec-gold text-udec-navy font-bold flex items-center justify-center text-sm shadow">
+              JC
+            </div>
+            <div class="hidden sm:block text-left text-xs leading-tight">
+              <p class="font-semibold text-white">Jefatura Carrera</p>
+              <p class="text-slate-300 text-[11px]">ingeco@udec.cl</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Panel de Selección Automática Docente por Carrera -->
+  <section class="bg-white border-b border-udec-border shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-200">
+          <div>
+            <h2 class="text-sm font-bold text-udec-navy flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-udec-gold"></i>
+              Módulo de Asignación Automática por Carrera
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Selecciona tu carrera y asignatura. Los bloques se asocian directamente con la malla oficial del semestre.
+            </p>
+          </div>
+
+          <!-- Filtros de Carrera y Semestre -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Carrera:</label>
+              <select id="careerSelect" class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-1.5 font-semibold focus:ring-2 focus:ring-udec-blue focus:border-udec-blue">
+                <option value="ingeco" selected>Ingeniería Comercial (INGECO)</option>
+                <option value="auditoria">Auditoría / Contabilidad</option>
+                <option value="civil_inf">Ingeniería Civil Informática</option>
+                <option value="industrial">Ingeniería Civil Industrial</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Nivel / Año Malla:</label>
+              <select id="levelSelect" class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg px-3 py-1.5 font-semibold focus:ring-2 focus:ring-udec-blue">
+                <option value="all">Todos los niveles</option>
+                <option value="1">1er Año (Nivel 1-2)</option>
+                <option value="2">2do Año (Nivel 3-4)</option>
+                <option value="3" selected>3er Año (Nivel 5-6)</option>
+                <option value="4">4to Año (Nivel 7-8)</option>
+                <option value="5">5to Año (Nivel 9-10)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector Rápido de Asignatura Activa para Agendar -->
+        <div class="pt-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex-1 flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-book-bookmark text-udec-blue"></i>
+              Asignatura a Programar:
+            </span>
+            <select id="activeSubjectSelect" class="bg-white border-2 border-udec-blue/40 text-udec-navy font-bold text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-udec-blue max-w-md w-full sm:w-auto">
+              <!-- Llenado dinámico según carrera -->
+            </select>
+
+            <span id="subjectInfoBadge" class="inline-flex items-center gap-1 bg-udec-ice text-udec-navy border border-slate-200 text-[11px] px-2.5 py-1 rounded-md font-mono">
+              <i class="fa-solid fa-users text-xs text-slate-500"></i> Cupo est.: <strong id="subjectQuotaDisplay">45</strong> est.
+            </span>
+            <span id="subjectProfBadge" class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-1 rounded-md">
+              <i class="fa-solid fa-chalkboard-user text-xs"></i> <span id="subjectProfDisplay">Prof. Titular</span>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="quickReserveHelpBtn" class="text-xs text-udec-blue hover:text-udec-navy font-semibold flex items-center gap-1">
+              <i class="fa-regular fa-lightbulb"></i> ¿Cómo funciona?
+            </button>
+            <button id="openScheduleMatrixBtn" class="bg-udec-gold hover:bg-udec-goldHover text-udec-navy font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-file-excel"></i> Ver Planilla Carrera
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Barra de Filtro de Sala y Modo de Visualización -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 w-full">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+      
+      <!-- Selector de Vista de Salas -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-bold text-slate-600 uppercase text-[11px] mr-1">Espacio de Aula:</span>
+        <button data-room="all" class="room-filter-btn px-2.5 py-1 rounded-md bg-udec-navy text-white font-medium transition shadow-xs">
+          Todas las Salas
+        </button>
+        <button data-room="Sala 101" class="room-filter-btn px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition">
+          Sala 101 (Cap: 60)
+        </button>
+        <button data-room="Sala 102" class="room-filter-btn px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition">
+          Sala 102 (Cap: 50)
+        </button>
+        <button data-room="Lab Comp 1" class="room-filter-btn px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition">
+          Lab Comp 1 (35 PCs)
+        </button>
+        <button data-room="Auditorio" class="room-filter-btn px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition">
+          Auditorio (Cap: 90)
+        </button>
+      </div>
+
+      <!-- Leyenda de Bloques Semanales -->
+      <div class="flex items-center gap-3 text-[11px] text-slate-600">
+        <span class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded bg-blue-100 border border-blue-400"></span> INGECO
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-400"></span> Auditoría
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded bg-purple-100 border border-purple-400"></span> Informática
+        </span>
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <i class="fa-regular fa-clock"></i> 11 Bloques UdeC
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Grilla Semanal Tipo MRBS / Planilla UdeC (Lunes a Viernes) -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      
+      <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs font-bold text-udec-navy">Matriz Semanal de Asignación Regular - Régimen Semestral 1-2026</span>
+        </div>
+        <span class="text-[11px] text-slate-500 italic">
+          Haz clic en cualquier celda para agendar directamente la asignatura seleccionada
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[900px]">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 text-xs border-b border-slate-200 uppercase tracking-wider font-semibold">
+              <th class="p-2.5 text-center w-36 bg-slate-200/90 sticky left-0 z-20 border-r border-slate-300">
+                Bloque Horario
+              </th>
+              <th class="p-2.5 border-r border-slate-200 text-center w-1/5 bg-slate-50">Lunes</th>
+              <th class="p-2.5 border-r border-slate-200 text-center w-1/5 bg-slate-50">Martes</th>
+              <th class="p-2.5 border-r border-slate-200 text-center w-1/5 bg-slate-50">Miércoles</th>
+              <th class="p-2.5 border-r border-slate-200 text-center w-1/5 bg-slate-50">Jueves</th>
+              <th class="p-2.5 text-center w-1/5 bg-slate-50">Viernes</th>
+            </tr>
+          </thead>
+          <tbody id="weeklyGridBody" class="text-xs divide-y divide-slate-200">
+            <!-- Bloques UdeC inyectados vía JS (Bloques 1 al 11) -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Resumen de Horarios Asignados por la Carrera -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-udec-blue/10 text-udec-blue flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Carga Semanal Programada para <span id="currentCareerTitle" class="text-udec-blue">Ingeniería Comercial</span></p>
+              <p class="text-[11px] text-slate-500" id="totalBookingsSummary">8 asignaturas con horarios asignados en el semestre</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="exportExcelBtn" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg shadow-2xs flex items-center gap-1.5 transition">
+              <i class="fa-regular fa-file-excel text-emerald-600"></i> Exportar a Excel (Formato UdeC)
+            </button>
+            <button id="sendToCoordinationBtn" class="bg-udec-navy hover:bg-udec-blue text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-paper-plane text-udec-gold"></i> Enviar a Aprobación TI / Registro
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal: Confirmar o Asignar Bloque Automático -->
+  <div id="bookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden transition-opacity">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 transform transition-all">
+      
+      <!-- Header Modal -->
+      <div class="bg-udec-navy text-white px-5 py-4 flex items-center justify-between border-b-2 border-udec-gold">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-udec-gold text-udec-navy flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </div>
+          <div>
+            <h3 id="modalTitle" class="text-sm font-bold text-white">Asignación Semestral de Bloque</h3>
+            <p class="text-[11px] text-slate-300">Reserva recurrente para todo el 1er Semestre 2026</p>
+          </div>
+        </div>
+        <button id="closeModalBtn" class="text-slate-300 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Formulario Automatizado -->
+      <form id="bookingForm" class="p-5 space-y-3.5 text-xs">
+        
+        <!-- Alerta de Bloque y Día Seleccionado -->
+        <div class="bg-udec-ice border border-slate-200 rounded-lg p-2.5 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-500">Día y Horario:</span>
+            <p id="modalBlockDisplay" class="font-bold text-udec-navy text-sm font-mono">Lunes - Bloque 2 (09:15 - 10:00)</p>
+          </div>
+          <span class="bg-udec-gold/20 text-udec-navy font-semibold px-2 py-1 rounded text-[11px]">Régimen Semanal</span>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Asignatura a Vincular *</label>
+          <select id="modalSubjectSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 font-semibold focus:ring-2 focus:ring-udec-blue text-xs">
+            <!-- Rellenado dinámicamente -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Sala / Laboratorio Asignado *</label>
+            <select id="modalRoomSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs font-medium">
+              <option value="Sala 101">Sala 101 (Capacidad: 60 - Proyector)</option>
+              <option value="Sala 102">Sala 102 (Capacidad: 50 - Pantalla)</option>
+              <option value="Lab Comp 1">Lab Comp 1 (35 PCs + Software Eco)</option>
+              <option value="Lab Comp 2">Lab Comp 2 (30 PCs)</option>
+              <option value="Auditorio">Auditorio Central (Capacidad: 90)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Tipo de Actividad</label>
+            <select id="modalTypeSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-udec-blue text-xs">
+              <option value="Cátedra">Cátedra Teórica</option>
+              <option value="Práctico / Lab">Taller Práctico / Lab</option>
+              <option value="Ayudantía">Ayudantía Regular</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Profesor / Responsable</label>
+            <input type="text" id="modalProfInput" class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-slate-700 text-xs" readonly>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Estimación de Alumnos</label>
+            <input type="number" id="modalQuotaInput" value="45" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Observaciones / Requerimientos de Software</label>
+          <input type="text" id="modalNotesInput" placeholder="Ej: Requiere software STATA / R instalado en PCs o telón activo" 
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-xs focus:ring-2 focus:ring-udec-blue">
+        </div>
+
+        <!-- Validaciones de Cruce / Estado -->
+        <div id="conflictAlert" class="hidden p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-[11px] flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+          <span>Advertencia: La sala seleccionada ya tiene un bloque comprometido en este horario.</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" id="deleteModalBtn" class="text-rose-600 hover:text-rose-800 font-semibold text-xs flex items-center gap-1 hidden">
+            <i class="fa-regular fa-trash-can"></i> Liberar Bloque
+          </button>
+          
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" id="cancelModalBtn" class="px-3.5 py-1.5 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-100 transition">
+              Cancelar
+            </button>
+            <button type="submit" class="px-4 py-1.5 bg-udec-blue hover:bg-udec-navy text-white rounded-lg font-semibold shadow-xs transition">
+              Guardar Bloque Semestral
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Vista Planilla Completa Carrera (Similar al Excel) -->
+  <div id="excelViewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+      <div class="bg-udec-navy text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-udec-gold">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-table-list text-udec-gold"></i>
+          <h3 class="font-bold text-sm">Planilla Oficial de Horarios - <span id="excelCareerHeader">INGECO 1-2026</span></h3>
+        </div>
+        <button id="closeExcelModalBtn" class="text-slate-300 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto flex-1">
+        <p class="text-xs text-slate-500 mb-3">
+          Esta vista resume la programación completa de asignaturas, profesores y salas asignadas tal como el archivo Excel consolidado de Jefatura de Carrera.
+        </p>
+
+        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <th class="p-2 border border-slate-200">Código</th>
+              <th class="p-2 border border-slate-200">Asignatura</th>
+              <th class="p-2 border border-slate-200">Nivel</th>
+              <th class="p-2 border border-slate-200">Docente Titular</th>
+              <th class="p-2 border border-slate-200">Bloques Semanales</th>
+              <th class="p-2 border border-slate-200">Sala</th>
+            </tr>
+          </thead>
+          <tbody id="excelTableBody" class="divide-y divide-slate-200">
+            <!-- Inyectado vía JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+        <button id="closeExcelModalBottomBtn" class="px-4 py-1.5 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-medium text-xs">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastMessage" class="fixed bottom-5 right-5 z-50 bg-udec-navy text-white px-4 py-3 rounded-xl shadow-lg border-l-4 border-udec-gold flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none text-xs">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toastText">Bloque semestral actualizado exitosamente.</span>
+  </div>
+
+  <!-- Footer Institucional UdeC -->
+  <footer class="bg-udec-navy text-slate-400 text-xs mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+        <div>
+          <span class="font-bold text-white text-xs">Universidad de Concepción</span> - Dirección de Tecnologías de Información (DTI)
+          <p class="text-[10px] text-slate-400">Automatización de Programación Docente & Gestión MRBS - Régimen Semestral 2026</p>
+        </div>
+        <div class="text-[11px] text-slate-300">
+          Mesa de Ayuda TI: <strong class="text-udec-gold">+56 41 220 4150</strong> | dti@udec.cl
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 1. Bloques horarios oficiales de la Universidad de Concepción
+    const udecTimeBlocks = [
+      { id: 1, label: "Bloque 1", time: "08:15 - 09:00" },
+      { id: 2, label: "Bloque 2", time: "09:15 - 10:00" },
+      { id: 3, label: "Bloque 3", time: "10:15 - 11:00" },
+      { id: 4, label: "Bloque 4", time: "11:15 - 12:00" },
+      { id: 5, label: "Bloque 5", time: "12:15 - 13:00" },
+      { id: 6, label: "Bloque 6", time: "13:15 - 14:00" },
+      { id: 7, label: "Bloque 7", time: "14:15 - 15:00" },
+      { id: 8, label: "Bloque 8", time: "15:15 - 16:00" },
+      { id: 9, label: "Bloque 9", time: "16:15 - 17:00" },
+      { id: 10, label: "Bloque 10", time: "17:15 - 18:00" },
+      { id: 11, label: "Bloque 11", time: "18:15 - 19:00" }
+    ];
+
+    const weekDays = [
+      { id: "lun", name: "Lunes" },
+      { id: "mar", name: "Martes" },
+      { id: "mie", name: "Miércoles" },
+      { id: "jue", name: "Jueves" },
+      { id: "vie", name: "Viernes" }
+    ];
+
+    // 2. Base de datos de Asignaturas por Carrera (Extraído de formatos oficiales como ingeco 1-2026)
+    const careersDatabase = {
+      ingeco: {
+        name: "Ingeniería Comercial",
+        code: "INGECO",
+        subjects: [
+          { code: "510140", name: "Microeconomía I", level: 3, prof: "Dr. Jorge Dresdner", quota: 55, color: "blue", defaultRoom: "Sala 101" },
+          { code: "510145", name: "Macroeconomía II", level: 4, prof: "Prof. Claudio Parés", quota: 50, color: "blue", defaultRoom: "Sala 101" },
+          { code: "520210", name: "Contabilidad de Costos", level: 3, prof: "Prof. María Paz Fuentes", quota: 48, color: "blue", defaultRoom: "Sala 102" },
+          { code: "530320", name: "Econometría I (Lab)", level: 5, prof: "Prof. Juan Carlos Salas", quota: 35, color: "blue", defaultRoom: "Lab Comp 1" },
+          { code: "540115", name: "Marketing Estratégico", level: 6, prof: "Dra. Marcela Cabezas", quota: 52, color: "blue", defaultRoom: "Sala 102" },
+          { code: "550410", name: "Finanzas Corporativas", level: 5, prof: "Prof. Carlos Smith", quota: 45, color: "blue", defaultRoom: "Sala 101" },
+          { code: "510110", name: "Introducción a la Economía", level: 1, prof: "Prof. Andrea Araya", quota: 65, color: "blue", defaultRoom: "Auditorio" }
+        ]
+      },
+      auditoria: {
+        name: "Auditoría",
+        code: "AUD",
+        subjects: [
+          { code: "520101", name: "Auditoría de Estados Financieros", level: 5, prof: "Prof. Hernán Vera", quota: 40, color: "emerald", defaultRoom: "Sala 102" },
+          { code: "520108", name: "Legislación Tributaria II", level: 4, prof: "Prof. Patricia Muñoz", quota: 45, color: "emerald", defaultRoom: "Sala 101" },
+          { code: "520130", name: "Sistemas de Información ERP", level: 3, prof: "Prof. Roberto Sepúlveda", quota: 32, color: "emerald", defaultRoom: "Lab Comp 1" }
+        ]
+      },
+      civil_inf: {
+        name: "Ingeniería Civil Informática",
+        code: "INF",
+        subjects: [
+          { code: "503214", name: "Estructuras de Datos y Algoritmos", level: 3, prof: "Dr. Diego Seco", quota: 45, color: "purple", defaultRoom: "Lab Comp 1" },
+          { code: "503340", name: "Bases de Datos Avanzadas", level: 5, prof: "Prof. Andrea Vásquez", quota: 38, color: "purple", defaultRoom: "Lab Comp 1" },
+          { code: "503410", name: "Redes de Computadores", level: 6, prof: "Dr. Jorge Pezoa", quota: 40, color: "purple", defaultRoom: "Sala 102" }
+        ]
+      },
+      industrial: {
+        name: "Ingeniería Civil Industrial",
+        code: "IND",
+        subjects: [
+          { code: "524310", name: "Investigación Operativa I", level: 5, prof: "Dra. Lorena Pradenas", quota: 55, color: "amber", defaultRoom: "Sala 101" },
+          { code: "524330", name: "Gestión de Operaciones", level: 6, prof: "Dr. Víctor Parada", quota: 48, color: "amber", defaultRoom: "Sala 102" }
+        ]
+      }
+    };
+
+    // 3. Bloques actualmente asignados en el semestre (Cargados por defecto basados en ingeco 1-2026)
+    let assignedSchedule = [
+      { id: 101, career: "ingeco", subjectCode: "510140", day: "lun", blockId: 2, room: "Sala 101", type: "Cátedra", prof: "Dr. Jorge Dresdner", quota: 55 },
+      { id: 102, career: "ingeco", subjectCode: "510140", day: "lun", blockId: 3, room: "Sala 101", type: "Cátedra", prof: "Dr. Jorge Dresdner", quota: 55 },
+      { id: 103, career: "ingeco", subjectCode: "530320", day: "mar", blockId: 3, room: "Lab Comp 1", type: "Práctico / Lab", prof: "Prof. Juan Carlos Salas", quota: 35 },
+      { id: 104, career: "ingeco", subjectCode: "530320", day: "mar", blockId: 4, room: "Lab Comp 1", type: "Práctico / Lab", prof: "Prof. Juan Carlos Salas", quota: 35 },
+      { id: 105, career: "ingeco", subjectCode: "540115", day: "mie", blockId: 7, room: "Sala 102", type: "Cátedra", prof: "Dra. Marcela Cabezas", quota: 52 },
+      { id: 106, career: "ingeco", subjectCode: "540115", day: "mie", blockId: 8, room: "Sala 102", type: "Cátedra", prof: "Dra. Marcela Cabezas", quota: 52 },
+      { id: 107, career: "ingeco", subjectCode: "550410", day: "jue", blockId: 2, room: "Sala 101", type: "Cátedra", prof: "Prof. Carlos Smith", quota: 45 },
+      { id: 108, career: "ingeco", subjectCode: "550410", day: "jue", blockId: 3, room: "Sala 101", type: "Cátedra", prof: "Prof. Carlos Smith", quota: 45 },
+      { id: 109, career: "ingeco", subjectCode: "520210", day: "vie", blockId: 4, room: "Sala 102", type: "Cátedra", prof: "Prof. María Paz Fuentes", quota: 48 },
+      { id: 110, career: "auditoria", subjectCode: "520108", day: "lun", blockId: 4, room: "Sala 101", type: "Cátedra", prof: "Prof. Patricia Muñoz", quota: 45 }
+    ];
+
+    let currentSelectedRoomFilter = "all";
+    let activeModalTarget = { day: null, blockId: null, existingId: null };
+
+    function populateSubjectSelectors() {
+      const careerKey = document.getElementById('careerSelect').value;
+      const levelFilter = document.getElementById('levelSelect').value;
+      const career = careersDatabase[careerKey];
+
+      const activeSubjectSelect = document.getElementById('activeSubjectSelect');
+      const modalSubjectSelect = document.getElementById('modalSubjectSelect');
+      
+      activeSubjectSelect.innerHTML = '';
+      modalSubjectSelect.innerHTML = '';
+
+      const filteredSubjects = career.subjects.filter(s => {
+        if (levelFilter === 'all') return true;
+        return s.level.toString() === levelFilter;
+      });
+
+      const subjectsToRender = filteredSubjects.length > 0 ? filteredSubjects : career.subjects;
+
+      subjectsToRender.forEach(subj => {
+        const opt = document.createElement('option');
+        opt.value = subj.code;
+        opt.textContent = `${subj.code} - ${subj.name} (Nivel ${subj.level})`;
+        activeSubjectSelect.appendChild(opt);
+
+        const modalOpt = document.createElement('option');
+        modalOpt.value = subj.code;
+        modalOpt.textContent = `${subj.code} - ${subj.name}`;
+        modalSubjectSelect.appendChild(modalOpt);
+      });
+
+      updateSubjectInfoDisplay();
+      document.getElementById('currentCareerTitle').textContent = career.name;
+    }
+
+    function updateSubjectInfoDisplay() {
+      const careerKey = document.getElementById('careerSelect').value;
+      const subjectCode = document.getElementById('activeSubjectSelect').value;
+      const career = careersDatabase[careerKey];
+      const subj = career.subjects.find(s => s.code === subjectCode) || career.subjects[0];
+
+      if (subj) {
+        document.getElementById('subjectQuotaDisplay').textContent = subj.quota;
+        document.getElementById('subjectProfDisplay').textContent = subj.prof;
+      }
+    }
+
+    function renderWeeklyGrid() {
+      const tbody = document.getElementById('weeklyGridBody');
+      tbody.innerHTML = '';
+
+      const currentCareer = document.getElementById('careerSelect').value;
+
+      udecTimeBlocks.forEach(block => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/50 transition-colors";
+
+        // Columna Sticky Bloque
+        const thBlock = document.createElement('td');
+        thBlock.className = "p-2 text-center font-mono text-xs bg-slate-100/70 border-r border-slate-300 sticky left-0 z-10";
+        thBlock.innerHTML = `
+          <div class="font-bold text-udec-navy">${block.label}</div>
+          <div class="text-[10px] text-slate-500">${block.time}</div>
+        `;
+        tr.appendChild(thBlock);
+
+        // Columnas Días (Lunes a Viernes)
+        weekDays.forEach(day => {
+          const td = document.createElement('td');
+          td.className = "p-1.5 border-r border-slate-200 align-top min-h-[58px] relative";
+
+          // Buscar reserva en este día y bloque
+          const matches = assignedSchedule.filter(item => {
+            const matchDayBlock = item.day === day.id && item.blockId === block.id;
+            if (!matchDayBlock) return false;
+            if (currentSelectedRoomFilter === "all") return true;
+            return item.room === currentSelectedRoomFilter;
+          });
+
+          if (matches.length > 0) {
+            // Celda ocupada
+            const item = matches[0];
+            const isMyCareer = item.career === currentCareer;
+            const careerData = careersDatabase[item.career] || careersDatabase.ingeco;
+            const subject = careerData.subjects.find(s => s.code === item.subjectCode) || { name: "Cátedra Asignada" };
+
+            let badgeStyle = "bg-blue-50 border-blue-400 text-blue-900";
+            if (item.career === "auditoria") badgeStyle = "bg-emerald-50 border-emerald-400 text-emerald-900";
+            if (item.career === "civil_inf") badgeStyle = "bg-purple-50 border-purple-400 text-purple-900";
+            if (item.career === "industrial") badgeStyle = "bg-amber-50 border-amber-400 text-amber-900";
+
+            td.innerHTML = `
+              <div onclick="openEditBlockModal('${day.id}', ${block.id}, ${item.id})" 
+                   class="group relative p-2 rounded-lg border-l-4 ${badgeStyle} shadow-2xs cursor-pointer hover:shadow-md transition">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="font-bold text-[11px] truncate" title="${subject.name}">${subject.name}</span>
+                  <span class="text-[9px] px-1 rounded bg-white font-mono font-semibold">${item.room}</span>
+                </div>
+                <div class="text-[10px] text-slate-600 truncate flex items-center gap-1">
+                  <i class="fa-solid fa-chalkboard-user text-[9px] text-slate-400"></i>
+                  <span>${item.prof}</span>
+                </div>
+                <div class="flex items-center justify-between mt-1 text-[9px] text-slate-500">
+                  <span class="badge-subtle bg-slate-200 text-slate-700">${item.type}</span>
+                  <span class="text-udec-blue font-semibold">${careerData.code}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            // Celda libre: Permite asignación automática con 1 clic
+            td.innerHTML = `
+              <div onclick="openQuickAssignModal('${day.id}', ${block.id})"
+                   class="h-full min-h-[50px] rounded-lg border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 hover:text-udec-blue hover:border-udec-blue/40 hover:bg-sky-50/50 cursor-pointer transition group p-1">
+                <span class="text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  <i class="fa-solid fa-plus text-[9px]"></i> Asignar
+                </span>
+                <span class="text-[9px] text-slate-400 opacity-0 group-hover:opacity-80">Libre</span>
+              </div>
+            `;
+          }
+
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      updateSummaryCount();
+    }
+
+    function updateSummaryCount() {
+      const currentCareer = document.getElementById('careerSelect').value;
+      const count = assignedSchedule.filter(s => s.career === currentCareer).length;
+      document.getElementById('totalBookingsSummary').textContent = `${count} bloques semestrales activos para esta carrera.`;
+    }
+
+    const bookingModal = document.getElementById('bookingModal');
+    const toast = document.getElementById('toastMessage');
+    const toastText = document.getElementById('toastText');
+
+    function showToast(text) {
+      toastText.textContent = text;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    // Abrir modal con datos precargados automáticamente según asignatura activa
+    window.openQuickAssignModal = function(dayId, blockId) {
+      activeModalTarget = { day: dayId, blockId: blockId, existingId: null };
+
+      const dayObj = weekDays.find(d => d.id === dayId);
+      const blockObj = udecTimeBlocks.find(b => b.id === blockId);
+      const careerKey = document.getElementById('careerSelect').value;
+      const currentCode = document.getElementById('activeSubjectSelect').value;
+      const career = careersDatabase[careerKey];
+      const subj = career.subjects.find(s => s.code === currentCode) || career.subjects[0];
+
+      document.getElementById('modalTitle').textContent = "Asignación Automática de Bloque Semestral";
+      document.getElementById('modalBlockDisplay').textContent = `${dayObj.name} - ${blockObj.label} (${blockObj.time})`;
+      
+      document.getElementById('modalSubjectSelect').value = subj.code;
+      document.getElementById('modalRoomSelect').value = subj.defaultRoom || "Sala 101";
+      document.getElementById('modalProfInput').value = subj.prof;
+      document.getElementById('modalQuotaInput').value = subj.quota;
+      document.getElementById('modalNotesInput').value = "";
+
+      document.getElementById('deleteModalBtn').classList.add('hidden');
+      document.getElementById('conflictAlert').classList.add('hidden');
+
+      bookingModal.classList.remove('hidden');
+    };
+
+    // Abrir modal para editar o liberar bloque
+    window.openEditBlockModal = function(dayId, blockId, scheduleId) {
+      activeModalTarget = { day: dayId, blockId: blockId, existingId: scheduleId };
+
+      const item = assignedSchedule.find(s => s.id === scheduleId);
+      if (!item) return;
+
+      const dayObj = weekDays.find(d => d.id === dayId);
+      const blockObj = udecTimeBlocks.find(b => b.id === blockId);
+
+      document.getElementById('modalTitle').textContent = "Detalle / Modificar Bloque";
+      document.getElementById('modalBlockDisplay').textContent = `${dayObj.name} - ${blockObj.label} (${blockObj.time})`;
+
+      document.getElementById('modalSubjectSelect').value = item.subjectCode;
+      document.getElementById('modalRoomSelect').value = item.room;
+      document.getElementById('modalProfInput').value = item.prof;
+      document.getElementById('modalQuotaInput').value = item.quota;
+      document.getElementById('modalTypeSelect').value = item.type;
+
+      document.getElementById('deleteModalBtn').classList.remove('hidden');
+      document.getElementById('conflictAlert').classList.add('hidden');
+
+      bookingModal.classList.remove('hidden');
+    };
+
+    function closeModal() {
+      bookingModal.classList.add('hidden');
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+    // Guardar bloque semestral
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const careerKey = document.getElementById('careerSelect').value;
+      const subjectCode = document.getElementById('modalSubjectSelect').value;
+      const room = document.getElementById('modalRoomSelect').value;
+      const type = document.getElementById('modalTypeSelect').value;
+      const prof = document.getElementById('modalProfInput').value;
+      const quota = parseInt(document.getElementById('modalQuotaInput').value, 10) || 45;
+
+      // Validación simple de conflicto con otra carrera en la misma sala y bloque
+      const conflict = assignedSchedule.find(s => 
+        s.day === activeModalTarget.day && 
+        s.blockId === activeModalTarget.blockId && 
+        s.room === room && 
+        s.id !== activeModalTarget.existingId
+      );
+
+      if (conflict) {
+        document.getElementById('conflictAlert').classList.remove('hidden');
+        return;
+      }
+
+      if (activeModalTarget.existingId) {
+        // Modificar existente
+        const target = assignedSchedule.find(s => s.id === activeModalTarget.existingId);
+        if (target) {
+          target.subjectCode = subjectCode;
+          target.room = room;
+          target.type = type;
+          target.prof = prof;
+          target.quota = quota;
+        }
+        showToast("Bloque semestral modificado correctamente.");
+      } else {
+        // Nuevo bloque
+        const newEntry = {
+          id: Date.now(),
+          career: careerKey,
+          subjectCode: subjectCode,
+          day: activeModalTarget.day,
+          blockId: activeModalTarget.blockId,
+          room: room,
+          type: type,
+          prof: prof,
+          quota: quota
+        };
+        assignedSchedule.push(newEntry);
+        showToast("¡Nuevo bloque semestral asignado exitosamente!");
+      }
+
+      closeModal();
+      renderWeeklyGrid();
+    });
+
+    // Eliminar / Liberar bloque
+    document.getElementById('deleteModalBtn').addEventListener('click', function() {
+      if (activeModalTarget.existingId) {
+        assignedSchedule = assignedSchedule.filter(s => s.id !== activeModalTarget.existingId);
+        closeModal();
+        renderWeeklyGrid();
+        showToast("Bloque semestral liberado.");
+      }
+    });
+
+    const roomFilterButtons = document.querySelectorAll('.room-filter-btn');
+    roomFilterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        roomFilterButtons.forEach(b => {
+          b.className = "room-filter-btn px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition";
+        });
+        btn.className = "room-filter-btn px-2.5 py-1 rounded-md bg-udec-navy text-white font-medium transition shadow-xs";
+        
+        currentSelectedRoomFilter = btn.getAttribute('data-room');
+        renderWeeklyGrid();
+      });
+    });
+
+    const excelModal = document.getElementById('excelViewModal');
+    document.getElementById('openScheduleMatrixBtn').addEventListener('click', () => {
+      const careerKey = document.getElementById('careerSelect').value;
+      const career = careersDatabase[careerKey];
+      document.getElementById('excelCareerHeader').textContent = `${career.code} 1-2026`;
+
+      const tbody = document.getElementById('excelTableBody');
+      tbody.innerHTML = '';
+
+      career.subjects.forEach(subj => {
+        // Encontrar bloques asignados para esta asignatura
+        const blocks = assignedSchedule.filter(s => s.subjectCode === subj.code);
+        const blockText = blocks.length > 0 
+          ? blocks.map(b => {
+              const d = weekDays.find(wd => wd.id === b.day)?.name || b.day;
+              return `${d} Bl.${b.blockId}`;
+            }).join(', ')
+          : '<span class="text-rose-500 italic">Sin asignar</span>';
+
+        const roomAssigned = blocks.length > 0 ? blocks[0].room : subj.defaultRoom;
+
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-50";
+        row.innerHTML = `
+          <td class="p-2 border border-slate-200 font-mono font-semibold">${subj.code}</td>
+          <td class="p-2 border border-slate-200 font-medium text-slate-800">${subj.name}</td>
+          <td class="p-2 border border-slate-200 text-center">${subj.level}° Semestre</td>
+          <td class="p-2 border border-slate-200">${subj.prof}</td>
+          <td class="p-2 border border-slate-200 font-mono text-[11px]">${blockText}</td>
+          <td class="p-2 border border-slate-200 font-semibold text-udec-blue">${roomAssigned}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      excelModal.classList.remove('hidden');
+    });
+
+    function closeExcelModal() {
+      excelModal.classList.add('hidden');
+    }
+    document.getElementById('closeExcelModalBtn').addEventListener('click', closeExcelModal);
+    document.getElementById('closeExcelModalBottomBtn').addEventListener('click', closeExcelModal);
+
+    document.getElementById('careerSelect').addEventListener('change', () => {
+      populateSubjectSelectors();
+      renderWeeklyGrid();
+    });
+
+    document.getElementById('levelSelect').addEventListener('change', () => {
+      populateSubjectSelectors();
+    });
+
+    document.getElementById('activeSubjectSelect').addEventListener('change', () => {
+      updateSubjectInfoDisplay();
+    });
+
+    document.getElementById('modalSubjectSelect').addEventListener('change', (e) => {
+      const careerKey = document.getElementById('careerSelect').value;
+      const subj = careersDatabase[careerKey].subjects.find(s => s.code === e.target.value);
+      if (subj) {
+        document.getElementById('modalProfInput').value = subj.prof;
+        document.getElementById('modalQuotaInput').value = subj.quota;
+        document.getElementById('modalRoomSelect').value = subj.defaultRoom || "Sala 101";
+      }
+    });
+
+    document.getElementById('exportExcelBtn').addEventListener('click', () => {
+      showToast("Generando reporte Excel formato 'horarios ingeco 1-2026.xlsx'...");
+    });
+
+    document.getElementById('sendToCoordinationBtn').addEventListener('click', () => {
+      showToast("Solicitud semestral enviada a Dirección TI y Registro Académico.");
+    });
+
+    document.getElementById('quickReserveHelpBtn').addEventListener('click', () => {
+      showToast("Paso 1: Selecciona la asignatura arriba. Paso 2: Pulsa en la celda del día/bloque deseado.");
+    });
+
+    // Iniciar
+    window.onload = function() {
+      populateSubjectSelectors();
+      renderWeeklyGrid();
+    };
+  </script>
+</body>
+</html>

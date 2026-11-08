@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Reserva Semestral por Carrera + Secretaría Académica + Motor MRBS | UdeC Campus Los Ángeles</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            udec: {
+              navy: '#002B49',
+              blue: '#003865',
+              blueLight: '#0d4e8a',
+              gold: '#E89D1E',
+              goldHover: '#c98412',
+              ice: '#F4F7FA',
+              border: '#E2E8F0',
+              accent: '#2563eb'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .striped-protected {
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(232, 157, 30, 0.08),
+        rgba(232, 157, 30, 0.08) 10px,
+        rgba(254, 243, 199, 0.35) 10px,
+        rgba(254, 243, 199, 0.35) 20px
+      );
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- BARRA SUPERIOR INSTITUCIONAL CON CAMBIO DE ROL EN VIVO -->
+  <header class="bg-udec-navy text-white border-b-4 border-udec-gold shadow-md sticky top-0 z-40">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6">
+      <div class="flex flex-wrap items-center justify-between py-2.5 gap-3">
+        <!-- Logo & Título -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-udec-gold flex items-center justify-center font-bold text-udec-navy text-xl shadow-inner shrink-0">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-300">Universidad de Concepción • Campus Los Ángeles</span>
+              <span class="hidden sm:inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded font-mono">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Conectado a Motor MRBS
+              </span>
+            </div>
+            <h1 class="text-sm sm:text-base font-bold text-white tracking-tight">
+              Sistema de Planificación Semestral por Carrera & Aprobación de Espacios
+            </h1>
+          </div>
+        </div>
+
+        <!-- Selector de Rol Interactivo + Notificaciones -->
+        <div class="flex items-center gap-3">
+          <!-- Switcher de Rol para probar el flujo completo -->
+          <div class="bg-slate-900/80 p-1 rounded-xl border border-white/15 flex items-center gap-1 text-xs">
+            <span class="text-[10px] uppercase tracking-wider text-slate-400 px-2 hidden xl:inline font-semibold">Simular Vista:</span>
+            <button id="roleJefeBtn" onclick="switchRole('jefe')" class="px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-udec-gold text-udec-navy shadow-xs">
+              <i class="fa-solid fa-user-tie"></i>
+              <span>Jefe de Carrera</span>
+            </button>
+            <button id="roleSecretariaBtn" onclick="switchRole('secretaria')" class="px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+              <i class="fa-solid fa-stamp"></i>
+              <span>Secretaría Académica</span>
+              <span id="pendingBadgeHeader" class="bg-amber-500 text-slate-950 font-mono text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">4</span>
+            </button>
+          </div>
+
+          <!-- Botón Centro de Notificaciones -->
+          <button onclick="toggleNotificationDrawer()" class="relative p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-white/10" title="Notificaciones de Aprobación / Rechazo">
+            <i class="fa-regular fa-bell text-base"></i>
+            <span id="notifCounterBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-udec-navy">3</span>
+          </button>
+
+          <!-- Perfil Activo -->
+          <div class="hidden md:flex items-center gap-2.5 pl-2 border-l border-white/15">
+            <div id="userAvatarBadge" class="w-9 h-9 rounded-full bg-udec-gold text-udec-navy font-extrabold flex items-center justify-center text-xs shadow">
+              JC
+            </div>
+            <div class="text-xs leading-tight">
+              <p id="userNameDisplay" class="font-bold text-white">Jefatura INGECO</p>
+              <p id="userEmailDisplay" class="text-udec-gold text-[11px] font-mono">jc.ingeco.la@udec.cl</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-navegación de Módulos -->
+      <div class="flex items-center gap-1 pt-1 overflow-x-auto text-xs border-t border-white/10">
+        <button onclick="switchTab('planner')" id="tabBtn-planner" class="tab-nav-btn px-4 py-2.5 font-bold border-b-2 border-udec-gold text-udec-gold flex items-center gap-2 whitespace-nowrap transition">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>1. Planificador Jefe de Carrera (Elección de Bloques)</span>
+        </button>
+        <button onclick="switchTab('secretaria')" id="tabBtn-secretaria" class="tab-nav-btn px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap transition">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>2. Revisión Secretaría Académica</span>
+          <span id="pendingBadgeTab" class="bg-amber-400/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.2 rounded text-[10px] font-mono">4 pendientes</span>
+        </button>
+        <button onclick="switchTab('mrbs')" id="tabBtn-mrbs" class="tab-nav-btn px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap transition">
+          <i class="fa-solid fa-server"></i>
+          <span>3. Calendario General MRBS (Sincronizado Automático)</span>
+          <span id="mrbsBadgeTab" class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded text-[10px] font-mono">En Vivo</span>
+        </button>
+        <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="tab-nav-btn px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap transition">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>4. Dashboard & Ocupación Campus Los Ángeles</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BARRA DE ESTADO RÁPIDO (KPIs EN TIEMPO REAL) -->
+  <section class="bg-white border-b border-slate-200 shadow-2xs">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
+        <div class="bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-2 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Asignaturas Carrera</span>
+            <span id="kpiTotalSubjects" class="text-base font-extrabold text-udec-navy font-mono">12</span>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-udec-navy/10 text-udec-navy flex items-center justify-center">
+            <i class="fa-solid fa-book"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-2 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Bloques Programados</span>
+            <span id="kpiTotalBlocks" class="text-base font-extrabold text-slate-800 font-mono">0</span>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <i class="fa-solid fa-table-cells"></i>
+          </div>
+        </div>
+
+        <div class="bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-50 transition" onclick="switchTab('secretaria')">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-amber-700 block">En Revisión Secretaría</span>
+            <span id="kpiPendingBlocks" class="text-base font-extrabold text-amber-700 font-mono">0</span>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-amber-200/70 text-amber-800 flex items-center justify-center">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-emerald-50 transition" onclick="switchTab('mrbs')">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-emerald-700 block">Aprobados ➔ En MRBS</span>
+            <span id="kpiApprovedBlocks" class="text-base font-extrabold text-emerald-700 font-mono">0</span>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-emerald-200/70 text-emerald-800 flex items-center justify-center">
+            <i class="fa-solid fa-check-double"></i>
+          </div>
+        </div>
+
+        <div class="bg-rose-50/70 border border-rose-200 rounded-lg px-3 py-2 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-rose-700 block">Rechazados / Observados</span>
+            <span id="kpiRejectedBlocks" class="text-base font-extrabold text-rose-700 font-mono">0</span>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-rose-200/70 text-rose-800 flex items-center justify-center">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50/70 border border-indigo-200 rounded-lg px-3 py-2 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-indigo-700 block">Motor Sugerencia Sala</span>
+            <span class="text-xs font-bold text-indigo-900 flex items-center gap-1 mt-0.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> Activo (Aforo+Eq)
+            </span>
+          </div>
+          <button onclick="openExcelPreviewModal()" class="text-[11px] bg-white hover:bg-indigo-100 text-indigo-800 border border-indigo-300 font-bold px-2 py-1 rounded shadow-2xs transition" title="Ver formato planilla Excel">
+            <i class="fa-regular fa-file-excel"></i> Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA 1: PLANIFICADOR DEL JEFE DE CARRERA (MALLA PRECARGADA + GRILLA) -->
+  <!-- ===================================================================== -->
+  <main id="view-planner" class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-4">
+    <!-- Barra de Controles de Carrera, Semestre y Envío a Secretaría Académica -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3.5 mb-4">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Carrera Oficial (Campus Los Ángeles):</label>
+            <select id="careerSelect" onchange="handleCareerOrLevelChange()" class="bg-slate-50 border border-slate-300 text-udec-navy text-xs rounded-lg px-3 py-2 font-bold focus:ring-2 focus:ring-udec-blue">
+              <option value="ingeco" selected>Ingeniería Comercial (INGECO 1-2026)</option>
+              <option value="auditoria">Auditoría (AUD I-2026)</option>
+              <option value="pei">Pedagogía en Inglés (PEI 1-2026)</option>
+              <option value="egb">Educación General Básica (EGB 1-2026)</option>
+              <option value="matematicas">Pedagogía en Matemáticas (PMAT 1-2026)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Semestre / Cohorte Malla:</label>
+            <div id="semesterPillsContainer" class="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs">
+              <button onclick="setSemesterFilter('1')" data-sem="1" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-bold bg-udec-navy text-white shadow-2xs transition">Sem 1°</button>
+              <button onclick="setSemesterFilter('3')" data-sem="3" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition">Sem 3°</button>
+              <button onclick="setSemesterFilter('5')" data-sem="5" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition">Sem 5°</button>
+              <button onclick="setSemesterFilter('7')" data-sem="7" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition">Sem 7°</button>
+              <button onclick="setSemesterFilter('9')" data-sem="9" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition">Sem 9°</button>
+              <button onclick="setSemesterFilter('all')" data-sem="all" class="sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition">Todos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones del Jefe de Carrera -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="openExcelPreviewModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-table text-emerald-600"></i>
+            <span>Ver Planilla Consolidada (Asignatura | Sala)</span>
+          </button>
+
+          <button onclick="submitCareerScheduleToSecretaria()" class="bg-udec-gold hover:bg-udec-goldHover text-udec-navy font-extrabold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Enviar Bloques a Secretaría Académica</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout de 2 Columnas: Catálogo de Asignaturas Precargadas (Izquierda) + Matriz Horaria Oficial (Derecha) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      
+      <!-- COLUMNA IZQUIERDA (4 cols): ASIGNATURAS PRECARGADAS DE LA CARRERA -->
+      <aside class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+        <div class="bg-udec-navy text-white px-4 py-3 border-b-2 border-udec-gold flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-udec-gold">1. Asignaturas Precargadas</h2>
+            <p class="text-[11px] text-slate-300">Haz clic en una asignatura y luego marca sus bloques en la grilla</p>
+          </div>
+          <span id="subjectListCountBadge" class="bg-white/10 text-white font-mono text-[11px] px-2 py-0.5 rounded">6 ramos</span>
+        </div>
+
+        <!-- Buscador rápido de asignatura / código / docente -->
+        <div class="p-2.5 bg-slate-50 border-b border-slate-200">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3 top-2.5"></i>
+            <input type="text" id="subjectSearchInput" oninput="renderPreloadedSubjectsList()" placeholder="Filtrar por código (451...), ramo o docente..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-udec-blue focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Lista de tarjetas de asignaturas -->
+        <div id="preloadedSubjectsContainer" class="divide-y divide-slate-200 max-h-[680px] overflow-y-auto">
+          <!-- Inyectado dinámicamente -->
+        </div>
+
+        <!-- Resumen de estados al pie del catálogo -->
+        <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-600 space-y-1">
+          <div class="font-bold text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles text-udec-gold"></i>
+            <span>¿Cómo sugiere sala el sistema?</span>
+          </div>
+          <p class="text-[10px] text-slate-500 leading-relaxed">
+            Al elegir un bloque horario, el motor cruza el <strong>cupo de inscritos</strong> + <strong>equipamiento requerido</strong> contra la disponibilidad en tiempo real de MRBS y propone la mejor sala a Secretaría Académica.
+          </p>
+        </div>
+      </aside>
+
+      <!-- COLUMNA DERECHA (8 cols): GRILLA SEMANAL CAMPUS LOS ÁNGELES -->
+      <section class="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <!-- Banner de Asignatura Activa Seleccionada -->
+        <div class="bg-gradient-to-r from-udec-navy via-udec-blue to-udec-blueLight text-white px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-udec-gold text-udec-navy flex items-center justify-center font-extrabold text-sm shrink-0 shadow">
+              <i class="fa-solid fa-hand-pointer"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] uppercase tracking-wider font-bold text-udec-gold">Asignatura Activa para Agendar:</span>
+                <span id="activeSubjSemBadge" class="text-[10px] bg-white/15 px-2 py-0.2 rounded font-mono">Semestre 1°</span>
+              </div>
+              <p id="activeSubjTitleBanner" class="text-sm font-bold text-white">451827 - Álgebra I</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="bg-white/10 border border-white/15 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-chalkboard-user text-udec-gold"></i>
+              <span id="activeSubjProfBanner">Felipe Cisterna</span>
+            </span>
+            <span class="bg-white/10 border border-white/15 px-2.5 py-1 rounded-lg font-mono flex items-center gap-1.5">
+              <i class="fa-solid fa-users text-emerald-300"></i>
+              <span>Cupo: <strong id="activeSubjQuotaBanner">90</strong> est.</span>
+            </span>
+            <span class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 px-2.5 py-1 rounded-lg font-mono flex items-center gap-1.5">
+              <i class="fa-solid fa-door-open"></i>
+              <span>Sugerida: <strong id="activeSubjSuggestedRoomBanner">Sala 93-A</strong></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Leyenda de Estados de Revisión -->
+        <div class="px-4 py-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="font-bold text-slate-600 uppercase text-[10px]">Estado del Bloque:</span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Borrador Carrera
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> En Revisión Secretaría
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Aprobado (Sincronizado MRBS)
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Observado / Rechazado
+            </span>
+          </div>
+          <span class="text-slate-500 text-[10px] font-mono">
+            <i class="fa-regular fa-clock"></i> Módulos 45 min + 5 min cambio (Formato Campus Los Ángeles)
+          </span>
+        </div>
+
+        <!-- Tabla de Bloques Horarios (Lunes a Viernes) -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[820px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-[11px] border-b border-slate-200 uppercase tracking-wider font-bold">
+                <th class="p-2.5 text-center w-36 bg-slate-200/80 sticky left-0 z-10 border-r border-slate-300">
+                  Módulo / Hora
+                </th>
+                <th class="p-2.5 border-r border-slate-200 text-center w-1/5">
+                  <div>Lunes</div>
+                  <div class="text-[9px] font-normal text-slate-500">Asignatura • Sala Sugerida</div>
+                </th>
+                <th class="p-2.5 border-r border-slate-200 text-center w-1/5">
+                  <div>Martes</div>
+                  <div class="text-[9px] font-normal text-slate-500">Asignatura • Sala Sugerida</div>
+                </th>
+                <th class="p-2.5 border-r border-slate-200 text-center w-1/5">
+                  <div>Miércoles</div>
+                  <div class="text-[9px] font-normal text-slate-500">Asignatura • Sala Sugerida</div>
+                </th>
+                <th class="p-2.5 border-r border-slate-200 text-center w-1/5">
+                  <div>Jueves</div>
+                  <div class="text-[9px] font-normal text-slate-500">Asignatura • Sala Sugerida</div>
+                </th>
+                <th class="p-2.5 text-center w-1/5">
+                  <div>Viernes</div>
+                  <div class="text-[9px] font-normal text-slate-500">Asignatura • Sala Sugerida</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="plannerGridBody" class="text-xs divide-y divide-slate-200">
+              <!-- Inyectado vía JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA 2: BANDEJA DE SECRETARÍA ACADÉMICA (REVISIÓN Y PASE A MRBS)     -->
+  <!-- ===================================================================== -->
+  <main id="view-secretaria" class="hidden flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <!-- Header Secretaría Académica -->
+      <div class="bg-udec-navy text-white px-5 py-4 border-b-2 border-udec-gold flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-udec-gold text-udec-navy flex items-center justify-center font-extrabold text-lg shrink-0 mt-0.5">
+            <i class="fa-solid fa-stamp"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-white">Bandeja de Revisión y Asignación de Espacios — Secretaría Académica</h2>
+              <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] px-2 py-0.5 rounded font-mono">Puente Directo MRBS</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Revisa los bloques enviados por los Jefes de Carrera, valida o modifica la <strong>Sala Sugerida por el Sistema</strong> y aprueba para inyectar automáticamente la serie semestral en <strong>MRBS</strong> (o rechaza con observaciones).
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="approveAllPendingSecretaria()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition">
+            <i class="fa-solid fa-check-double"></i>
+            <span>Aprobar Pendientes Sin Tope & Sincronizar a MRBS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Filtros de Secretaría Académica -->
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase mr-1">Filtrar Carrera:</label>
+            <select id="secCareerFilter" onchange="renderSecretariaTable()" class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 font-semibold text-slate-800">
+              <option value="all">Todas las Carreras</option>
+              <option value="ingeco">Ingeniería Comercial (INGECO)</option>
+              <option value="auditoria">Auditoría</option>
+              <option value="pei">Pedagogía en Inglés (PEI)</option>
+              <option value="egb">Educación General Básica (EGB)</option>
+              <option value="matematicas">Pedagogía en Matemáticas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase mr-1">Estado Solicitud:</label>
+            <select id="secStatusFilter" onchange="renderSecretariaTable()" class="bg-white border border-slate-300 rounded-lg px-3 py-1.5 font-semibold text-slate-800">
+              <option value="all">Todos los Estados</option>
+              <option value="pending">En Revisión Secretaría (Pendientes)</option>
+              <option value="approved">Aprobados (En MRBS)</option>
+              <option value="rejected">Observados / Rechazados</option>
+              <option value="draft">Borrador (Aún no enviados)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-600 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-udec-blue"></i>
+          <span>Al aprobar, se crea el registro repetitivo semanal en <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono text-[10px]">mrbs_repeat</code> y <code class="bg-slate-200 px-1.5 py-0.5 rounded font-mono text-[10px]">mrbs_entry</code> y se notifica al Jefe de Carrera.</span>
+        </div>
+      </div>
+
+      <!-- Tabla de Solicitudes para Secretaría Académica -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 uppercase text-[10px] font-bold border-b border-slate-200">
+              <th class="p-3">Carrera / Sem.</th>
+              <th class="p-3">Código & Asignatura</th>
+              <th class="p-3">Docente & Cupo</th>
+              <th class="p-3">Día y Bloque</th>
+              <th class="p-3">Requerimiento</th>
+              <th class="p-3 bg-indigo-50/60 border-x border-indigo-100">Espacio Sugerido por Sistema (Editable)</th>
+              <th class="p-3 text-center">Estado / ID MRBS</th>
+              <th class="p-3 text-right">Decisión Secretaría Académica</th>
+            </tr>
+          </thead>
+          <tbody id="secretariaTableBody" class="divide-y divide-slate-200">
+            <!-- Inyectado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA 3: CALENDARIO GENERAL MRBS (SINCRONIZACIÓN AUTOMÁTICA)          -->
+  <!-- ===================================================================== -->
+  <main id="view-mrbs" class="hidden flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-4">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <!-- Header Visor MRBS -->
+      <div class="bg-slate-900 text-white px-5 py-4 border-b-2 border-emerald-400 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-white">Motor Oficial MRBS — Vista Diaria por Salas del Campus Los Ángeles</h2>
+              <span class="bg-emerald-500 text-slate-950 font-mono font-extrabold text-[10px] px-2 py-0.5 rounded">SINCRONIZADO</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Todas las reservas que <strong>Secretaría Académica aprueba</strong> pasan automáticamente como reservas semestrales recurrentes (`rep_type = 2`) al calendario oficial MRBS.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Selector de Día en MRBS -->
+          <div class="inline-flex rounded-lg bg-slate-800 p-1 border border-slate-700 text-xs">
+            <button onclick="setMrbsDay('lun')" data-mrbsday="lun" class="mrbs-day-btn px-3 py-1 rounded-md font-bold bg-emerald-500 text-slate-950">Lunes</button>
+            <button onclick="setMrbsDay('mar')" data-mrbsday="mar" class="mrbs-day-btn px-3 py-1 rounded-md font-medium text-slate-300 hover:text-white">Martes</button>
+            <button onclick="setMrbsDay('mie')" data-mrbsday="mie" class="mrbs-day-btn px-3 py-1 rounded-md font-medium text-slate-300 hover:text-white">Miércoles</button>
+            <button onclick="setMrbsDay('jue')" data-mrbsday="jue" class="mrbs-day-btn px-3 py-1 rounded-md font-medium text-slate-300 hover:text-white">Jueves</button>
+            <button onclick="setMrbsDay('vie')" data-mrbsday="vie" class="mrbs-day-btn px-3 py-1 rounded-md font-medium text-slate-300 hover:text-white">Viernes</button>
+          </div>
+
+          <button onclick="openMrbsSqlModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/40 font-mono text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-code"></i>
+            <span>Ver Payload SQL / API hacia MRBS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Matriz MRBS: Filas = Bloques Horarios, Columnas = Salas Reales Campus Los Ángeles -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[1100px] text-xs">
+          <thead id="mrbsGridHead">
+            <!-- Inyectado vía JS con las salas reales -->
+          </thead>
+          <tbody id="mrbsGridBody" class="divide-y divide-slate-200">
+            <!-- Inyectado vía JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- VISTA 4: DASHBOARD EJECUTIVO & OCUPACIÓN DE SALAS                     -->
+  <!-- ===================================================================== -->
+  <main id="view-dashboard" class="hidden flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-4 space-y-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- Estado por Carrera -->
+      <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-udec-navy flex items-center gap-2">
+              <i class="fa-solid fa-graduation-cap text-udec-gold"></i>
+              Estado de Planificación Semestral por Carrera (1-2026)
+            </h3>
+            <p class="text-xs text-slate-500">Seguimiento de envíos de Jefes de Carrera y revisión de Secretaría Académica</p>
+          </div>
+        </div>
+        <div id="dashboardCareersList" class="space-y-3">
+          <!-- Inyectado vía JS -->
+        </div>
+      </div>
+
+      <!-- Capacidad y Ocupación por Sala del Campus Los Ángeles -->
+      <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-udec-navy flex items-center gap-2">
+              <i class="fa-solid fa-door-open text-udec-blue"></i>
+              Catálogo de Salas Campus Los Ángeles & Ocupación
+            </h3>
+            <p class="text-xs text-slate-500">Aforos oficiales utilizados por el Motor de Sugerencia</p>
+          </div>
+        </div>
+        <div id="dashboardRoomsList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+          <!-- Inyectado vía JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: ASIGNAR BLOQUE + MOTOR DE SUGERENCIA INTELIGENTE DE SALA     -->
+  <!-- ===================================================================== -->
+  <div id="assignModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-200">
+      <div class="bg-udec-navy text-white px-5 py-4 flex items-center justify-between border-b-2 border-udec-gold">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-udec-gold text-udec-navy flex items-center justify-center font-extrabold text-sm">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h3 id="assignModalTitle" class="text-sm font-bold text-white">Asignar Bloque & Sugerencia Inteligente de Espacio</h3>
+            <p id="assignModalSubtitle" class="text-[11px] text-slate-300 font-mono">Lunes • Bloque 1 (08:15 - 09:00)</p>
+          </div>
+        </div>
+        <button onclick="closeAssignModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <form id="assignBlockForm" onsubmit="saveBlockFromModal(event)" class="p-5 space-y-4 text-xs">
+        <!-- Selección de Asignatura de la Carrera -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Asignatura de la Carrera *</label>
+          <select id="modalSubjectSelect" onchange="updateModalRoomRecommendations()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-bold text-udec-navy bg-slate-50 focus:ring-2 focus:ring-udec-blue">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <!-- Datos precargados: Docente, Cupo Estimado y Tipo de Requerimiento -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Docente Titular</label>
+            <input type="text" id="modalProfInput" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Cupo / Inscritos *</label>
+            <input type="number" id="modalQuotaInput" oninput="updateModalRoomRecommendations()" min="5" max="200" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold font-mono focus:ring-2 focus:ring-udec-blue">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Necesidad de Espacio *</label>
+            <select id="modalReqTypeSelect" onchange="updateModalRoomRecommendations()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-semibold focus:ring-2 focus:ring-udec-blue">
+              <option value="aula">Aula Cátedra + Proyector</option>
+              <option value="lab">Laboratorio Computación (PCs)</option>
+              <option value="cade">Espacio CADE / Taller</option>
+              <option value="seminario">Sala Seminario / Biblioteca (SRB/SRD)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Alerta de Tope de Docente o Cohorte -->
+        <div id="modalConflictWarning" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-[11px] flex items-start gap-2.5">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm mt-0.5"></i>
+          <div id="modalConflictWarningText"></div>
+        </div>
+
+        <!-- Panel del Motor de Sugerencia Automática de Sala -->
+        <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-indigo-950 flex items-center gap-1.5 text-xs">
+              <i class="fa-solid fa-microchip text-indigo-600"></i>
+              <span>Espacio Sugerido Automáticamente según Cupo y Disponibilidad MRBS:</span>
+            </span>
+            <span class="text-[10px] bg-indigo-100 text-indigo-800 font-mono font-semibold px-2 py-0.5 rounded">Auto-Match</span>
+          </div>
+
+          <div id="modalSuggestedRoomsList" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+            <!-- Ranking de salas sugeridas inyectado en vivo -->
+          </div>
+          <input type="hidden" id="modalSelectedRoomInput" value="93-A">
+        </div>
+
+        <!-- Observación para Secretaría Académica -->
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Nota / Requerimiento adicional para Secretaría Académica (Opcional)</label>
+          <input type="text" id="modalNotesInput" placeholder="Ej: Requiere parlantes para audio de inglés / Software estadístico..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800">
+        </div>
+
+        <!-- Estado de revisión o motivo de rechazo si existiera -->
+        <div id="modalRejectionBox" class="hidden p-3 bg-rose-50 border-l-4 border-rose-500 rounded-r-lg text-rose-900 text-[11px]">
+          <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-comment-dots"></i> Observación de Secretaría Académica:</p>
+          <p id="modalRejectionReasonText" class="mt-0.5 italic"></p>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" id="modalDeleteBlockBtn" onclick="deleteBlockFromModal()" class="hidden text-rose-600 hover:text-rose-800 font-bold flex items-center gap-1.5 px-2 py-1">
+            <i class="fa-regular fa-trash-can"></i> Quitar Bloque
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeAssignModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-100">
+              Cancelar
+            </button>
+            <button type="submit" class="px-4 py-2 bg-udec-blue hover:bg-udec-navy text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-check"></i>
+              <span>Guardar con Sala Sugerida</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: RECHAZAR / OBSERVAR SOLICITUD (SECRETARÍA ACADÉMICA)         -->
+  <!-- ===================================================================== -->
+  <div id="rejectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="bg-rose-700 text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-ban"></i>
+          <h3 class="text-sm font-bold">Observar / Rechazar Asignación de Espacio</h3>
+        </div>
+        <button onclick="closeRejectModal()" class="text-rose-200 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form onsubmit="confirmRejectBlock(event)" class="p-5 space-y-3 text-xs">
+        <p id="rejectModalSubjSummary" class="font-bold text-slate-800 bg-slate-100 p-2.5 rounded-lg border border-slate-200"></p>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Motivo del Rechazo u Observación para el Jefe de Carrera *</label>
+          <textarea id="rejectReasonInput" rows="3" required placeholder="Ej: La Sala 93-A está reservada para asignatura masiva de otra carrera. Favor seleccionar bloque de la tarde o dividir en 2 secciones." class="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-rose-500"></textarea>
+        </div>
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          <span class="text-[10px] text-slate-400 w-full">Motivos rápidos:</span>
+          <button type="button" onclick="setQuickRejectReason('Tope de capacidad en sala solicitada con otra carrera prioritaria. Favor elegir otro bloque.')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-300">Tope de sala</button>
+          <button type="button" onclick="setQuickRejectReason('Sobrecupo para la sala sugerida. Se sugiere dividir sección o pasar a Sala 93-A en bloque libre.')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-300">Sobrecupo</button>
+          <button type="button" onclick="setQuickRejectReason('Bloque dentro de franja de coordinación departamental. Favor reprogramar.')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-300">Bloque protegido</button>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeRejectModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-lg text-slate-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane"></i> Rechazar y Notificar a Carrera
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: VISTA FORMATO EXCEL OFICIAL (ASIGNATURA | SALA POR DÍA)      -->
+  <!-- ===================================================================== -->
+  <div id="excelPreviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+      <div class="bg-emerald-800 text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-file-excel text-emerald-300 text-lg"></i>
+          <div>
+            <h3 id="excelModalTitle" class="text-sm font-bold">Formato Planilla Oficial UdeC — horarios ingeco 1-2026 CON SALAS.xlsx</h3>
+            <p class="text-[11px] text-emerald-200">Doble columna por día (Asignatura | Sala) idéntica a la planilla enviada por las carreras</p>
+          </div>
+        </div>
+        <button onclick="closeExcelPreviewModal()" class="text-emerald-200 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-auto flex-1">
+        <table class="w-full text-[11px] border-collapse border border-slate-300">
+          <thead>
+            <tr class="bg-slate-200 text-slate-800 font-bold text-center">
+              <th rowspan="2" class="border border-slate-300 p-2 w-28">HORARIO</th>
+              <th colspan="2" class="border border-slate-300 p-1.5 bg-blue-50">LUNES</th>
+              <th colspan="2" class="border border-slate-300 p-1.5 bg-blue-50">MARTES</th>
+              <th colspan="2" class="border border-slate-300 p-1.5 bg-blue-50">MIÉRCOLES</th>
+              <th colspan="2" class="border border-slate-300 p-1.5 bg-blue-50">JUEVES</th>
+              <th colspan="2" class="border border-slate-300 p-1.5 bg-blue-50">VIERNES</th>
+            </tr>
+            <tr class="bg-slate-100 text-slate-700 font-semibold text-center text-[10px]">
+              <th class="border border-slate-300 p-1">Asignatura</th>
+              <th class="border border-slate-300 p-1 w-14">Sala</th>
+              <th class="border border-slate-300 p-1">Asignatura</th>
+              <th class="border border-slate-300 p-1 w-14">Sala</th>
+              <th class="border border-slate-300 p-1">Asignatura</th>
+              <th class="border border-slate-300 p-1 w-14">Sala</th>
+              <th class="border border-slate-300 p-1">Asignatura</th>
+              <th class="border border-slate-300 p-1 w-14">Sala</th>
+              <th class="border border-slate-300 p-1">Asignatura</th>
+              <th class="border border-slate-300 p-1 w-14">Sala</th>
+            </tr>
+          </thead>
+          <tbody id="excelModalTableBody">
+            <!-- Dinámico -->
+          </tbody>
+        </table>
+      </div>
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
+        <span class="text-slate-500">Generado dinámicamente desde los bloques del semestre seleccionado.</span>
+        <div class="flex gap-2">
+          <button onclick="showToast('Archivo Excel (.xlsx) descargado con formato oficial UdeC.')" class="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Descargar .XLSX
+          </button>
+          <button onclick="closeExcelPreviewModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-semibold">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 4: CONEXIÓN TÉCNICA CON MOTOR MRBS (SQL / API PAYLOAD)          -->
+  <!-- ===================================================================== -->
+  <div id="mrbsSqlModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 text-slate-100 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-700">
+      <div class="bg-slate-950 px-5 py-3.5 flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-emerald-400"></i>
+          <h3 class="text-sm font-bold font-mono text-white">Integración Directa con Base de Datos MRBS (MySQL / PHP)</h3>
+        </div>
+        <button onclick="closeMrbsSqlModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-3 text-xs max-h-[80vh] overflow-y-auto">
+        <p class="text-slate-300 leading-relaxed">
+          Cuando <strong>Secretaría Académica</strong> pulsa <span class="text-emerald-400 font-semibold">"Aprobar y Pasar a MRBS"</span>, el backend ejecuta una transacción automática sobre las tablas nativas de <strong>MRBS (`mrbs_repeat` y `mrbs_entry`)</strong> para reservar todos los bloques del semestre completo:
+        </p>
+        <pre id="mrbsSqlCodeBlock" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-emerald-300 font-mono text-[11px] overflow-x-auto leading-relaxed"></pre>
+      </div>
+      <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-end">
+        <button onclick="closeMrbsSqlModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DRAWER LATERAL: CENTRO DE NOTIFICACIONES (APROBACIONES Y RECHAZOS)    -->
+  <!-- ===================================================================== -->
+  <div id="notifDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl border-l border-slate-200 z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="bg-udec-navy text-white px-5 py-4 border-b-2 border-udec-gold flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <i class="fa-solid fa-bell text-udec-gold"></i>
+        <div>
+          <h3 class="text-sm font-bold">Centro de Notificaciones & Correo UdeC</h3>
+          <p class="text-[11px] text-slate-300">Trazabilidad entre Jefatura de Carrera y Secretaría Académica</p>
+        </div>
+      </div>
+      <button onclick="toggleNotificationDrawer()" class="text-slate-300 hover:text-white p-1">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div id="notifListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-200 p-3 space-y-2">
+      <!-- Notificaciones dinámicas -->
+    </div>
+  </div>
+
+  <!-- TOAST FLOTANTE -->
+  <div id="toastMessage" class="fixed bottom-5 right-5 z-50 bg-udec-navy text-white px-4 py-3 rounded-xl shadow-xl border-l-4 border-udec-gold flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none text-xs max-w-md">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base shrink-0"></i>
+    <span id="toastText">Acción completada.</span>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL CON DATOS REALES 2026 CAMPUS LOS ÁNGELES -->
+  <script>
+    // =========================================================================
+    // 1. BLOQUES HORARIOS OFICIALES CAMPUS LOS ÁNGELES (CON RECREOS 5 MIN Y HORARIO PROTEGIDO)
+    // =========================================================================
+    const laTimeBlocks = [
+      { id: 1, label: "Bloque 1", time: "08:15 - 09:00", period: "Mañana" },
+      { id: 2, label: "Bloque 2", time: "09:00 - 09:45", period: "Mañana", breakAfter: "5 min recreo (09:45 - 09:50)" },
+      { id: 3, label: "Bloque 3", time: "09:50 - 10:35", period: "Mañana" },
+      { id: 4, label: "Bloque 4", time: "10:35 - 11:20", period: "Mañana", breakAfter: "5 min recreo (11:20 - 11:25)" },
+      { id: 5, label: "Bloque 5", time: "11:25 - 12:10", period: "Mañana" },
+      { id: 6, label: "Bloque 6", time: "12:10 - 12:55", period: "Mañana", protectedAfter: true },
+      { id: 7, label: "Bloque 7", time: "14:35 - 15:20", period: "Tarde" },
+      { id: 8, label: "Bloque 8", time: "15:20 - 16:05", period: "Tarde", breakAfter: "5 min recreo (16:05 - 16:10)" },
+      { id: 9, label: "Bloque 9", time: "16:10 - 16:55", period: "Tarde" },
+      { id: 10, label: "Bloque 10", time: "16:55 - 17:40", period: "Tarde", breakAfter: "5 min recreo (17:40 - 17:45)" },
+      { id: 11, label: "Bloque 11", time: "17:45 - 18:30", period: "Tarde" },
+      { id: 12, label: "Bloque 12", time: "18:30 - 19:15", period: "Tarde" }
+    ];
+
+    const weekDays = [
+      { id: "lun", name: "Lunes" },
+      { id: "mar", name: "Martes" },
+      { id: "mie", name: "Miércoles" },
+      { id: "jue", name: "Jueves" },
+      { id: "vie", name: "Viernes" }
+    ];
+
+    // =========================================================================
+    // 2. CATÁLOGO REAL DE SALAS DEL CAMPUS LOS ÁNGELES (PARA MOTOR SUGERENCIA & MRBS)
+    // =========================================================================
+    const campusRooms = [
+      { id: "93-A", name: "Sala 93-A", capacity: 95, type: "aula", features: "Proyector HD + Audio + Pizarra Doble", building: "Pabellón 93" },
+      { id: "93-B", name: "Sala 93-B", capacity: 85, type: "aula", features: "Proyector HD + Ventilación", building: "Pabellón 93" },
+      { id: "103", name: "Sala 103", capacity: 65, type: "aula", features: "Proyector + Telón", building: "Edificio Central" },
+      { id: "105", name: "Sala 105", capacity: 55, type: "aula", features: "Proyector + Pizarra", building: "Edificio Central" },
+      { id: "106-B", name: "Sala 106-B", capacity: 45, type: "aula", features: "Pantalla Interactiva", building: "Edificio Central" },
+      { id: "411", name: "Sala 411", capacity: 50, type: "aula", features: "Proyector + Audio", building: "Pabellón Docente" },
+      { id: "Sala 1", name: "Sala 1", capacity: 40, type: "aula", features: "Proyector Estándar", building: "Pabellón Aulas" },
+      { id: "Sala 4", name: "Sala 4", capacity: 35, type: "aula", features: "Proyector Estándar", building: "Pabellón Aulas" },
+      { id: "LAB", name: "Lab. Computación (LAB)", capacity: 40, type: "lab", features: "40 PCs + ERP / Stata / R", building: "Laboratorios TI" },
+      { id: "CADE", name: "Sala CADE", capacity: 60, type: "cade", features: "Mesas Modulares + Proyector", building: "Centro Apoyo" },
+      { id: "SRB", name: "Sala Reuniones Biblioteca (SRB)", capacity: 25, type: "seminario", features: "TV 75\" + Mesa Seminario", building: "Biblioteca" },
+      { id: "SRD", name: "Sala Reuniones Decanato (SRD)", capacity: 20, type: "seminario", features: "Videoconferencia", building: "Administración" }
+    ];
+
+    // =========================================================================
+    // 3. BASE DE DATOS REAL DE ASIGNATURAS PRECARGADAS POR CARRERA (EXTRAÍDO DE EXCEL/PDF 2026)
+    // =========================================================================
+    const careersData = {
+      ingeco: {
+        name: "Ingeniería Comercial",
+        short: "INGECO",
+        head: "Prof. Gerardo González R.",
+        email: "jc.ingeco.la@udec.cl",
+        color: "blue",
+        subjects: [
+          // Semestre 1
+          { code: "451827", name: "Álgebra I", sem: 1, prof: "Felipe Cisterna", quota: 90, reqType: "aula", targetBlocks: 4 },
+          { code: "451825", name: "Cálculo I", sem: 1, prof: "Felipe Cisterna", quota: 91, reqType: "aula", targetBlocks: 4 },
+          { code: "451824", name: "Gestión de Empresas", sem: 1, prof: "Gerardo González / Manuel Velásquez", quota: 90, reqType: "aula", targetBlocks: 4 },
+          { code: "451826", name: "Economía I", sem: 1, prof: "Sandra Sepúlveda", quota: 85, reqType: "aula", targetBlocks: 4 },
+          { code: "451828", name: "Derecho Corporativo I", sem: 1, prof: "Cristian Baeza", quota: 60, reqType: "aula", targetBlocks: 2 },
+          // Semestre 3
+          { code: "451836", name: "Microeconomía I", sem: 3, prof: "Moisés Carrasco", quota: 70, reqType: "aula", targetBlocks: 4 },
+          { code: "451835", name: "Contabilidad II", sem: 3, prof: "Paulina Vallejos", quota: 80, reqType: "aula", targetBlocks: 4 },
+          { code: "451834", name: "Cálculo III", sem: 3, prof: "Felipe Cisterna", quota: 80, reqType: "aula", targetBlocks: 4 },
+          { code: "451838", name: "Tecnologías de la Información I", sem: 3, prof: "Sergio Rifo", quota: 60, reqType: "lab", targetBlocks: 2 },
+          { code: "451837", name: "Estadística I", sem: 3, prof: "Sergio Rifo", quota: 50, reqType: "aula", targetBlocks: 4 },
+          // Semestre 5
+          { code: "451845", name: "Finanzas I", sem: 5, prof: "Jorge Muñoz", quota: 90, reqType: "aula", targetBlocks: 4 },
+          { code: "451848", name: "Microeconomía II", sem: 5, prof: "Moisés Carrasco", quota: 50, reqType: "aula", targetBlocks: 4 },
+          { code: "451849", name: "Métodos Cuantitativos", sem: 5, prof: "Jaime Moreno", quota: 50, reqType: "aula", targetBlocks: 4 },
+          { code: "451846", name: "Gestión de Marketing I", sem: 5, prof: "Gerardo González", quota: 60, reqType: "aula", targetBlocks: 4 },
+          // Semestre 7
+          { code: "451857", name: "Gestión de Marketing II", sem: 7, prof: "Gerardo González", quota: 60, reqType: "aula", targetBlocks: 4 },
+          { code: "451858", name: "Gestión de Personas II", sem: 7, prof: "Francisco Díaz", quota: 50, reqType: "aula", targetBlocks: 4 },
+          { code: "451855", name: "Evaluación de Proyectos", sem: 7, prof: "Jaime Moreno", quota: 60, reqType: "aula", targetBlocks: 4 },
+          // Semestre 9
+          { code: "451966", name: "Electivo: Econometría II", sem: 9, prof: "Jorge Muñoz", quota: 15, reqType: "seminario", targetBlocks: 2 },
+          { code: "451950", name: "Electivo: Control de Gestión", sem: 9, prof: "Alejandro Elgueta", quota: 40, reqType: "aula", targetBlocks: 2 },
+          { code: "451856", name: "Electivo: Coaching", sem: 9, prof: "Francisco Díaz", quota: 20, reqType: "seminario", targetBlocks: 2 }
+        ]
+      },
+      auditoria: {
+        name: "Auditoría",
+        short: "AUD",
+        head: "Prof. Dora Carrasco I.",
+        email: "jc.auditoria.la@udec.cl",
+        color: "emerald",
+        subjects: [
+          { code: "451902", name: "Adm. de Empresas I", sem: 1, prof: "Dora Carrasco", quota: 50, reqType: "aula", targetBlocks: 4 },
+          { code: "451904", name: "Derecho Civil y Comercial", sem: 1, prof: "Waldo Figueroa", quota: 50, reqType: "aula", targetBlocks: 4 },
+          { code: "451900", name: "Tec. de la Información", sem: 1, prof: "Pedro Quiroz", quota: 38, reqType: "lab", targetBlocks: 2 },
+          { code: "451901", name: "Matemática Elemental", sem: 1, prof: "Ana Venegas", quota: 50, reqType: "cade", targetBlocks: 4 },
+          { code: "451919", name: "Contabilidad General II", sem: 3, prof: "Paulina Vallejos", quota: 42, reqType: "aula", targetBlocks: 4 },
+          { code: "451928", name: "Auditoría I", sem: 5, prof: "Dora Carrasco", quota: 29, reqType: "aula", targetBlocks: 4 },
+          { code: "451938", name: "Auditoría de Sistemas", sem: 7, prof: "Luis Lagos Núñez", quota: 29, reqType: "lab", targetBlocks: 2 }
+        ]
+      },
+      pei: {
+        name: "Pedagogía en Inglés",
+        short: "PEI",
+        head: "Ms. Caterin Díaz",
+        email: "jc.pei.la@udec.cl",
+        color: "purple",
+        subjects: [
+          { code: "457902", name: "Taller de Vocabulario", sem: 1, prof: "Ms. Caterin Díaz", quota: 35, reqType: "aula", targetBlocks: 2 },
+          { code: "457901", name: "Taller Intro. a la Gramática", sem: 1, prof: "Mr. A. Fernández", quota: 35, reqType: "aula", targetBlocks: 2 },
+          { code: "457903", name: "Taller de Pronunciación", sem: 1, prof: "Mr. C. Sanhueza", quota: 32, reqType: "lab", targetBlocks: 2 },
+          { code: "457908", name: "Lengua Inglesa III", sem: 3, prof: "Nicoll Castillo", quota: 30, reqType: "aula", targetBlocks: 4 },
+          { code: "457909", name: "Morfosintaxis: El Sustantivo", sem: 3, prof: "Mr. A. Fernández", quota: 30, reqType: "aula", targetBlocks: 2 },
+          { code: "457917", name: "Cultura Pueblos Habla Inglesa II", sem: 5, prof: "Ms. M. Cares", quota: 28, reqType: "aula", targetBlocks: 2 }
+        ]
+      },
+      egb: {
+        name: "Educación General Básica",
+        short: "EGB",
+        head: "Prof. Claudia Murúa",
+        email: "jc.egb.la@udec.cl",
+        color: "amber",
+        subjects: [
+          { code: "457963", name: "Estrategias Intervención Aula NEE", sem: 1, prof: "Claudia Murúa", quota: 45, reqType: "aula", targetBlocks: 2 },
+          { code: "457653", name: "Folklore y Pedagogía", sem: 3, prof: "Erico Zapata", quota: 38, reqType: "aula", targetBlocks: 2 },
+          { code: "457625", name: "Educación Intercultural Bilingüe", sem: 5, prof: "Domingo Carilao", quota: 35, reqType: "aula", targetBlocks: 2 }
+        ]
+      },
+      matematicas: {
+        name: "Pedagogía en Matemáticas",
+        short: "PMAT",
+        head: "Prof. Álvaro Moya",
+        email: "jc.pmat.la@udec.cl",
+        color: "teal",
+        subjects: [
+          { code: "457958", name: "Pensamiento Computacional y Prog.", sem: 1, prof: "Álvaro Moya", quota: 35, reqType: "lab", targetBlocks: 2 },
+          { code: "458114", name: "Tecnología, Salud Mental y Neurociencia", sem: 3, prof: "Álvaro Moya", quota: 38, reqType: "aula", targetBlocks: 2 }
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 4. ESTADO DE RESERVAS SEMESTRALES (CONECTADO ENTRE JEFE CARRERA, SECRETARÍA Y MRBS)
+    // =========================================================================
+    // status: 'approved' (Ya en MRBS), 'pending' (En Revisión Secretaría), 'rejected' (Observado), 'draft' (Borrador Carrera)
+    let scheduleBookings = [
+      // INGECO Semestre 1 (Basado en horarios ingeco 1-2026 real)
+      { id: 1001, career: "ingeco", sem: 1, subjectCode: "451827", day: "lun", blockId: 1, reqType: "aula", quota: 90, suggestedRoom: "93-A", status: "approved", mrbsRepeatId: "REP-2026-401", notes: "Proyector activo" },
+      { id: 1002, career: "ingeco", sem: 1, subjectCode: "451827", day: "lun", blockId: 2, reqType: "aula", quota: 90, suggestedRoom: "93-A", status: "approved", mrbsRepeatId: "REP-2026-401", notes: "Proyector activo" },
+      { id: 1003, career: "ingeco", sem: 1, subjectCode: "451826", day: "lun", blockId: 3, reqType: "aula", quota: 85, suggestedRoom: "93-A", status: "approved", mrbsRepeatId: "REP-2026-402", notes: "" },
+      { id: 1004, career: "ingeco", sem: 1, subjectCode: "451826", day: "lun", blockId: 4, reqType: "aula", quota: 85, suggestedRoom: "93-A", status: "approved", mrbsRepeatId: "REP-2026-402", notes: "" },
+      { id: 1005, career: "ingeco", sem: 1, subjectCode: "451824", day: "mar", blockId: 1, reqType: "aula", quota: 90, suggestedRoom: "93-A", status: "pending", mrbsRepeatId: null, notes: "Docentes compartidos G. González / M. Velásquez" },
+      { id: 1006, career: "ingeco", sem: 1, subjectCode: "451824", day: "mar", blockId: 2, reqType: "aula", quota: 90, suggestedRoom: "93-A", status: "pending", mrbsRepeatId: null, notes: "Docentes compartidos" },
+      { id: 1007, career: "ingeco", sem: 1, subjectCode: "451825", day: "mie", blockId: 1, reqType: "aula", quota: 91, suggestedRoom: "93-A", status: "pending", mrbsRepeatId: null, notes: "91 inscritos confirmados" },
+      { id: 1008, career: "ingeco", sem: 1, subjectCode: "451825", day: "mie", blockId: 2, reqType: "aula", quota: 91, suggestedRoom: "93-A", status: "pending", mrbsRepeatId: null, notes: "" },
+      { id: 1009, career: "ingeco", sem: 1, subjectCode: "451828", day: "jue", blockId: 9, reqType: "aula", quota: 60, suggestedRoom: "103", status: "rejected", mrbsRepeatId: null, notes: "", rejectReason: "Sala 103 en mantención eléctrica los jueves bloque 9. Secretaría sugiere cambiar a Sala 93-B o bloque 7." },
+      
+      // INGECO Semestre 3
+      { id: 1010, career: "ingeco", sem: 3, subjectCode: "451836", day: "lun", blockId: 3, reqType: "aula", quota: 70, suggestedRoom: "93-B", status: "approved", mrbsRepeatId: "REP-2026-405", notes: "" },
+      { id: 1011, career: "ingeco", sem: 3, subjectCode: "451835", day: "mar", blockId: 3, reqType: "aula", quota: 80, suggestedRoom: "93-B", status: "approved", mrbsRepeatId: "REP-2026-406", notes: "" },
+      { id: 1012, career: "ingeco", sem: 3, subjectCode: "451838", day: "vie", blockId: 3, reqType: "lab", quota: 60, suggestedRoom: "LAB", status: "pending", mrbsRepeatId: null, notes: "Requiere Excel avanzado" },
+
+      // AUDITORÍA Semestre 1 (Basado en Horario Auditoria I-2026 CON SALAS.xlsx)
+      { id: 2001, career: "auditoria", sem: 1, subjectCode: "451902", day: "lun", blockId: 1, reqType: "aula", quota: 50, suggestedRoom: "93-B", status: "approved", mrbsRepeatId: "REP-2026-501", notes: "" },
+      { id: 2002, career: "auditoria", sem: 1, subjectCode: "451904", day: "mar", blockId: 1, reqType: "aula", quota: 50, suggestedRoom: "93-B", status: "approved", mrbsRepeatId: "REP-2026-502", notes: "" },
+      { id: 2003, career: "auditoria", sem: 1, subjectCode: "451900", day: "mie", blockId: 3, reqType: "lab", quota: 38, suggestedRoom: "LAB", status: "approved", mrbsRepeatId: "REP-2026-503", notes: "" },
+      { id: 2004, career: "auditoria", sem: 1, subjectCode: "451901", day: "jue", blockId: 3, reqType: "cade", quota: 50, suggestedRoom: "CADE", status: "pending", mrbsRepeatId: null, notes: "Apoyo CADE" },
+
+      // PEI Semestre 1 (Basado en horarios y salas PEI 2026 FINAL CON SALAS)
+      { id: 3001, career: "pei", sem: 1, subjectCode: "457902", day: "lun", blockId: 1, reqType: "aula", quota: 35, suggestedRoom: "Sala 1", status: "approved", mrbsRepeatId: "REP-2026-601", notes: "Audio inglés" },
+      { id: 3002, career: "pei", sem: 1, subjectCode: "457903", day: "mie", blockId: 9, reqType: "lab", quota: 32, suggestedRoom: "LAB", status: "approved", mrbsRepeatId: "REP-2026-602", notes: "Fonética en LAB" }
+    ];
+
+    // Historial de Notificaciones (entre Jefe de Carrera y Secretaría Académica)
+    let notificationsLog = [
+      {
+        id: 1,
+        time: "Hoy, 19:45",
+        type: "approved",
+        recipient: "Jefatura INGECO (jc.ingeco.la@udec.cl)",
+        title: "Bloques Aprobados e Inyectados en MRBS",
+        body: "Secretaría Académica aprobó Álgebra I (451827) y Economía I (451826) en Sala 93-A. Ya figuran en el calendario oficial MRBS (IDs REP-2026-401, REP-2026-402)."
+      },
+      {
+        id: 2,
+        time: "Hoy, 20:10",
+        type: "rejected",
+        recipient: "Jefatura INGECO (jc.ingeco.la@udec.cl)",
+        title: "Observación de Sala: Derecho Corporativo I (451828)",
+        body: "Rechazado en Jueves Bloque 9 (Sala 103): Sala 103 en mantención eléctrica los jueves bloque 9. Secretaría sugiere cambiar a Sala 93-B o bloque 7."
+      },
+      {
+        id: 3,
+        time: "Hoy, 20:30",
+        type: "pending",
+        recipient: "Secretaría Académica (sec.academica.la@udec.cl)",
+        title: "Nuevos bloques enviados para revisión (INGECO & Auditoría)",
+        body: "Existen bloques pendientes de validación con espacio sugerido automático listo para aprobar."
+      }
+    ];
+
+    // Variables de Estado UI
+    let currentRole = "jefe"; // 'jefe' | 'secretaria'
+    let currentTab = "planner"; // 'planner' | 'secretaria' | 'mrbs' | 'dashboard'
+    let currentCareerKey = "ingeco";
+    let currentSemesterFilter = "1";
+    let activeSubjectCode = "451827";
+    let activeModalContext = { day: null, blockId: null, bookingId: null };
+    let rejectingBookingId = null;
+    let currentMrbsDay = "lun";
+
+    // =========================================================================
+    // 5. MOTOR DE SUGERENCIA AUTOMÁTICA DE SALAS (SEGÚN CUPO, TIPO Y DISPONIBILIDAD MRBS)
+    // =========================================================================
+    function computeRoomSuggestions(dayId, blockId, quota, reqType, excludeBookingId = null) {
+      // Buscar salas ya ocupadas en ese día y bloque (en estado approved o pending)
+      const occupiedRoomIds = scheduleBookings
+        .filter(b => b.day === dayId && b.blockId === blockId && b.id !== excludeBookingId && b.status !== "rejected")
+        .map(b => b.suggestedRoom);
+
+      return campusRooms.map(room => {
+        const isOccupied = occupiedRoomIds.includes(room.id);
+        const capacityEnough = room.capacity >= quota;
+        const typeMatches = room.type === reqType;
+
+        // Puntaje de adecuación (más alto = mejor match)
+        let score = 100;
+        if (isOccupied) score -= 500;
+        if (!capacityEnough) {
+          score -= (quota - room.capacity) * 4; // Penaliza sobrecupo
+        } else {
+          // Premia que la sala se ajuste sin desperdiciar 60 asientos vacíos
+          constslack = room.capacity - quota;
+          score -= Math.min(30, Math.floor(constslack / 3));
+        }
+        if (typeMatches) score += 25;
+        else score -= 35;
+
+        return {
+          ...room,
+          isOccupied,
+          capacityEnough,
+          typeMatches,
+          score: Math.max(0, Math.min(99, score))
+        };
+      }).sort((a, b) => {
+        if (a.isOccupied !== b.isOccupied) return a.isOccupied ? 1 : -1;
+        if (a.typeMatches !== b.typeMatches) return a.typeMatches ? -1 : 1;
+        if (a.capacityEnough !== b.capacityEnough) return a.capacityEnough ? -1 : 1;
+        return b.score - a.score;
+      });
+    }
+
+    function getBestRoomForSubject(subj, dayId = "lun", blockId = 1) {
+      const ranked = computeRoomSuggestions(dayId, blockId, subj.quota, subj.reqType);
+      return ranked[0] ? ranked[0].id : "93-A";
+    }
+
+    function findSubjectInfo(careerKey, subjectCode) {
+      const career = careersData[careerKey];
+      if (!career) return null;
+      return career.subjects.find(s => s.code === subjectCode) || null;
+    }
+
+    // =========================================================================
+    // 6. CAMBIO DE ROL Y PESTAÑAS
+    // =========================================================================
+    function switchRole(role) {
+      currentRole = role;
+      const jefeBtn = document.getElementById("roleJefeBtn");
+      const secBtn = document.getElementById("roleSecretariaBtn");
+      const avatar = document.getElementById("userAvatarBadge");
+      const nameDisp = document.getElementById("userNameDisplay");
+      const emailDisp = document.getElementById("userEmailDisplay");
+
+      if (role === "jefe") {
+        jefeBtn.className = "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-udec-gold text-udec-navy shadow-xs";
+        secBtn.className = "px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-300 hover:text-white";
+        const c = careersData[currentCareerKey];
+        avatar.textContent = "JC";
+        nameDisp.textContent = `Jefatura ${c.short}`;
+        emailDisp.textContent = c.email;
+        switchTab("planner");
+        showToast(`Vista cambiada a: Jefatura de Carrera (${c.name})`);
+      } else {
+        secBtn.className = "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-udec-gold text-udec-navy shadow-xs";
+        jefeBtn.className = "px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-300 hover:text-white";
+        avatar.textContent = "SA";
+        nameDisp.textContent = "Secretaría Académica";
+        emailDisp.textContent = "sec.academica.la@udec.cl";
+        switchTab("secretaria");
+        showToast("Vista cambiada a: Secretaría Académica (Revisión y Pase a MRBS)");
+      }
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      ["planner", "secretaria", "mrbs", "dashboard"].forEach(t => {
+        const viewEl = document.getElementById(`view-${t}`);
+        const btnEl = document.getElementById(`tabBtn-${t}`);
+        if (t === tabId) {
+          viewEl.classList.remove("hidden");
+          btnEl.className = "tab-nav-btn px-4 py-2.5 font-bold border-b-2 border-udec-gold text-udec-gold flex items-center gap-2 whitespace-nowrap transition";
+        } else {
+          viewEl.classList.add("hidden");
+          btnEl.className = "tab-nav-btn px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap transition";
+        }
+      });
+
+      refreshAllViews();
+    }
+
+    // =========================================================================
+    // 7. RENDERIZADO DEL CATÁLOGO DE ASIGNATURAS PRECARGADAS Y GRILLA DEL JEFE DE CARRERA
+    // =========================================================================
+    function handleCareerOrLevelChange() {
+      currentCareerKey = document.getElementById("careerSelect").value;
+      const career = careersData[currentCareerKey];
+      const filtered = getFilteredSubjectsForCurrentCareer();
+      if (filtered.length > 0) {
+        activeSubjectCode = filtered[0].code;
+      } else if (career.subjects.length > 0) {
+        activeSubjectCode = career.subjects[0].code;
+      }
+
+      if (currentRole === "jefe") {
+        document.getElementById("userNameDisplay").textContent = `Jefatura ${career.short}`;
+        document.getElementById("userEmailDisplay").textContent = career.email;
+      }
+
+      refreshAllViews();
+    }
+
+    function setSemesterFilter(sem) {
+      currentSemesterFilter = sem;
+      document.querySelectorAll(".sem-pill-btn").forEach(btn => {
+        if (btn.getAttribute("data-sem") === sem) {
+          btn.className = "sem-pill-btn px-2.5 py-1.5 rounded-md font-bold bg-udec-navy text-white shadow-2xs transition";
+        } else {
+          btn.className = "sem-pill-btn px-2.5 py-1.5 rounded-md font-semibold text-slate-600 hover:text-slate-900 transition";
+        }
+      });
+
+      const filtered = getFilteredSubjectsForCurrentCareer();
+      if (filtered.length > 0 && !filtered.some(s => s.code === activeSubjectCode)) {
+        activeSubjectCode = filtered[0].code;
+      }
+      refreshAllViews();
+    }
+
+    function getFilteredSubjectsForCurrentCareer() {
+      const career = careersData[currentCareerKey];
+      const query = (document.getElementById("subjectSearchInput")?.value || "").toLowerCase().trim();
+      return career.subjects.filter(s => {
+        const matchSem = currentSemesterFilter === "all" || s.sem.toString() === currentSemesterFilter;
+        const matchQuery = !query || s.code.toLowerCase().includes(query) || s.name.toLowerCase().includes(query) || s.prof.toLowerCase().includes(query);
+        return matchSem && matchQuery;
+      });
+    }
+
+    function selectActiveSubject(code) {
+      activeSubjectCode = code;
+      renderPreloadedSubjectsList();
+      updateActiveSubjectBanner();
+    }
+
+    function updateActiveSubjectBanner() {
+      const subj = findSubjectInfo(currentCareerKey, activeSubjectCode) || careersData[currentCareerKey].subjects[0];
+      if (!subj) return;
+      document.getElementById("activeSubjSemBadge").textContent = `Semestre ${subj.sem}°`;
+      document.getElementById("activeSubjTitleBanner").textContent = `${subj.code} - ${subj.name}`;
+      document.getElementById("activeSubjProfBanner").textContent = subj.prof;
+      document.getElementById("activeSubjQuotaBanner").textContent = subj.quota;
+      document.getElementById("activeSubjSuggestedRoomBanner").textContent = getBestRoomForSubject(subj);
+    }
+
+    function renderPreloadedSubjectsList() {
+      const container = document.getElementById("preloadedSubjectsContainer");
+      const subjects = getFilteredSubjectsForCurrentCareer();
+      document.getElementById("subjectListCountBadge").textContent = `${subjects.length} asignaturas`;
+
+      if (subjects.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No hay asignaturas en este semestre/filtro.</div>`;
+        return;
+      }
+
+      container.innerHTML = subjects.map(subj => {
+        const isSelected = subj.code === activeSubjectCode;
+        const assignedBlocks = scheduleBookings.filter(b => b.career === currentCareerKey && b.subjectCode === subj.code);
+        const approvedCount = assignedBlocks.filter(b => b.status === "approved").length;
+        const rejectedCount = assignedBlocks.filter(b => b.status === "rejected").length;
+        const pendingCount = assignedBlocks.filter(b => b.status === "pending").length;
+        const suggestedDefault = getBestRoomForSubject(subj);
+
+        let statusPill = `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${assignedBlocks.length}/${subj.targetBlocks} blq.</span>`;
+        if (rejectedCount > 0) {
+          statusPill = `<span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> ${rejectedCount} obs.</span>`;
+        } else if (approvedCount > 0 && approvedCount === assignedBlocks.length) {
+          statusPill = `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-check"></i> En MRBS (${approvedCount})</span>`;
+        } else if (pendingCount > 0) {
+          statusPill = `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-clock"></i> En Revisión (${pendingCount})</span>`;
+        }
+
+        return `
+          <div onclick="selectActiveSubject('${subj.code}')"
+               class="p-3 cursor-pointer transition border-l-4 ${isSelected ? 'border-udec-gold bg-amber-50/50' : 'border-transparent hover:bg-slate-50'}">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono font-bold text-[11px] text-udec-blue bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">${subj.code}</span>
+                  <span class="text-[10px] font-semibold text-slate-400">Sem ${subj.sem}°</span>
+                </div>
+                <h4 class="font-bold text-xs text-slate-800 mt-1">${subj.name}</h4>
+              </div>
+              ${statusPill}
+            </div>
+
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
+              <span class="truncate max-w-[170px]" title="${subj.prof}">
+                <i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>${subj.prof}
+              </span>
+              <div class="flex items-center gap-2 font-mono text-[10px]">
+                <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700"><i class="fa-solid fa-users text-slate-400 mr-1"></i>${subj.quota}</span>
+                <span class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded font-semibold" title="Sala sugerida según cupo">Sug: ${suggestedDefault}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPlannerGrid() {
+      const tbody = document.getElementById("plannerGridBody");
+      tbody.innerHTML = "";
+
+      laTimeBlocks.forEach(block => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/60 transition-colors";
+
+        // Columna de Hora / Bloque
+        const tdTime = document.createElement("td");
+        tdTime.className = "p-2 text-center font-mono bg-slate-100/90 border-r border-slate-300 sticky left-0 z-10";
+        tdTime.innerHTML = `
+          <div class="font-bold text-udec-navy text-xs">${block.label}</div>
+          <div class="text-[10px] text-slate-600">${block.time}</div>
+          ${block.breakAfter ? `<div class="mt-1 text-[9px] text-amber-700 bg-amber-100/80 rounded px-1 py-0.2">☕ 5 min</div>` : ''}
+        `;
+        tr.appendChild(tdTime);
+
+        // Columnas Lunes a Viernes
+        weekDays.forEach(day => {
+          const td = document.createElement("td");
+          td.className = "p-1.5 border-r border-slate-200 align-top min-h-[64px]";
+
+          // Filtrar reservas de la carrera actual y del semestre seleccionado
+          const bookingsInCell = scheduleBookings.filter(b => {
+            if (b.career !== currentCareerKey) return false;
+            if (b.day !== day.id || b.blockId !== block.id) return false;
+            if (currentSemesterFilter !== "all" && b.sem.toString() !== currentSemesterFilter) return false;
+            return true;
+          });
+
+          if (bookingsInCell.length > 0) {
+            td.innerHTML = bookingsInCell.map(b => {
+              const subj = findSubjectInfo(b.career, b.subjectCode) || { name: b.subjectCode, prof: "" };
+              let cardStyle = "bg-slate-50 border-slate-400 text-slate-900";
+              let statusBadge = `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-semibold">Borrador</span>`;
+
+              if (b.status === "pending") {
+                cardStyle = "bg-amber-50/90 border-amber-500 text-amber-950";
+                statusBadge = `<span class="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-bold"><i class="fa-solid fa-hourglass-half mr-0.5"></i>En Revisión</span>`;
+              } else if (b.status === "approved") {
+                cardStyle = "bg-emerald-50/90 border-emerald-500 text-emerald-950";
+                statusBadge = `<span class="text-[9px] bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded font-bold"><i class="fa-solid fa-check-double mr-0.5"></i>MRBS</span>`;
+              } else if (b.status === "rejected") {
+                cardStyle = "bg-rose-50 border-rose-500 text-rose-950 ring-1 ring-rose-300";
+                statusBadge = `<span class="text-[9px] bg-rose-200 text-rose-900 px-1.5 py-0.2 rounded font-bold"><i class="fa-solid fa-triangle-exclamation mr-0.5"></i>Observado</span>`;
+              }
+
+              return `
+                <div onclick="openAssignModal('${day.id}', ${block.id}, ${b.id})"
+                     class="p-2 rounded-lg border-l-4 ${cardStyle} shadow-2xs cursor-pointer hover:shadow-md transition mb-1 last:mb-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-mono font-bold text-[10px] opacity-75">${b.subjectCode} (S${b.sem}°)</span>
+                    <span class="font-mono font-extrabold text-[10px] bg-white px-1.5 py-0.2 rounded border border-slate-200 text-udec-navy" title="Sala Sugerida / Asignada">
+                      <i class="fa-solid fa-door-open text-[9px] text-udec-gold mr-0.5"></i>${b.suggestedRoom}
+                    </span>
+                  </div>
+                  <div class="font-bold text-[11px] leading-tight mt-0.5 truncate" title="${subj.name}">${subj.name}</div>
+                  <div class="text-[10px] opacity-80 truncate mt-0.5">${subj.prof} (${b.quota})</div>
+                  <div class="flex items-center justify-between mt-1.5 pt-1 border-t border-black/5">
+                    ${statusBadge}
+                    ${b.mrbsRepeatId ? `<span class="font-mono text-[8px] text-emerald-700">${b.mrbsRepeatId}</span>` : ''}
+                  </div>
+                </div>
+              `;
+            }).join("");
+          } else {
+            // Celda vacía lista para asignar con 1 clic
+            td.innerHTML = `
+              <div onclick="openAssignModal('${day.id}', ${block.id}, null)"
+                   class="h-full min-h-[56px] rounded-lg border border-dashed border-slate-200 hover:border-udec-blue hover:bg-blue-50/40 flex flex-col items-center justify-center text-slate-300 hover:text-udec-blue cursor-pointer transition group p-1">
+                <span class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
+                  <i class="fa-solid fa-plus"></i> Asignar ${activeSubjectCode}
+                </span>
+                <span class="text-[9px] opacity-0 group-hover:opacity-80 font-mono">Auto-sugerir sala</span>
+              </div>
+            `;
+          }
+
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+
+        // Si es el Bloque 6 (12:10 - 12:55), insertar la fila de HORARIO PROTEGIDO (13:00 - 14:30)
+        if (block.protectedAfter) {
+          const trProt = document.createElement("tr");
+          trProt.className = "striped-protected border-y-2 border-amber-300/80";
+          trProt.innerHTML = `
+            <td class="p-2 text-center font-mono bg-amber-100/90 border-r border-amber-300 sticky left-0 z-10">
+              <div class="font-extrabold text-amber-900 text-[11px]">PROTEGIDO</div>
+              <div class="text-[10px] text-amber-800">13:00 - 14:30</div>
+            </td>
+            <td colspan="5" class="p-2 text-center">
+              <div class="inline-flex items-center gap-2 bg-amber-100/90 text-amber-900 border border-amber-300 px-3 py-1 rounded-full text-xs font-bold">
+                <i class="fa-solid fa-shield-halved text-udec-gold"></i>
+                <span>HORARIO PROTEGIDO INSTITUCIONAL (13:00 - 13:45 / 13:45 - 14:30) — Almuerzo y Actividades Estudiantiles</span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(trProt);
+        }
+      });
+    }
+
+    // =========================================================================
+    // 8. MODAL DE ASIGNACIÓN Y MOTOR DE RECOMENDACIÓN DE SALA
+    // =========================================================================
+    function openAssignModal(dayId, blockId, bookingId) {
+      activeModalContext = { day: dayId, blockId: blockId, bookingId: bookingId };
+
+      const dayObj = weekDays.find(d => d.id === dayId);
+      const blockObj = laTimeBlocks.find(b => b.id === blockId);
+      document.getElementById("assignModalSubtitle").textContent = `${dayObj.name} • ${blockObj.label} (${blockObj.time})`;
+
+      const career = careersData[currentCareerKey];
+      const modalSubjSelect = document.getElementById("modalSubjectSelect");
+      modalSubjSelect.innerHTML = career.subjects.map(s =>
+        `<option value="${s.code}">${s.code} - ${s.name} (Sem ${s.sem}° • Cupo: ${s.quota})</option>`
+      ).join("");
+
+      const deleteBtn = document.getElementById("modalDeleteBlockBtn");
+      const rejectBox = document.getElementById("modalRejectionBox");
+
+      if (bookingId) {
+        const existing = scheduleBookings.find(b => b.id === bookingId);
+        if (!existing) return;
+        modalSubjSelect.value = existing.subjectCode;
+        const subj = findSubjectInfo(existing.career, existing.subjectCode);
+        document.getElementById("modalProfInput").value = subj ? subj.prof : "";
+        document.getElementById("modalQuotaInput").value = existing.quota;
+        document.getElementById("modalReqTypeSelect").value = existing.reqType;
+        document.getElementById("modalNotesInput").value = existing.notes || "";
+        document.getElementById("modalSelectedRoomInput").value = existing.suggestedRoom;
+
+        deleteBtn.classList.remove("hidden");
+        if (existing.status === "rejected" && existing.rejectReason) {
+          rejectBox.classList.remove("hidden");
+          document.getElementById("modalRejectionReasonText").textContent = existing.rejectReason;
+        } else {
+          rejectBox.classList.add("hidden");
+        }
+      } else {
+        modalSubjSelect.value = activeSubjectCode;
+        const subj = findSubjectInfo(currentCareerKey, activeSubjectCode) || career.subjects[0];
+        document.getElementById("modalProfInput").value = subj.prof;
+        document.getElementById("modalQuotaInput").value = subj.quota;
+        document.getElementById("modalReqTypeSelect").value = subj.reqType;
+        document.getElementById("modalNotesInput").value = "";
+        deleteBtn.classList.add("hidden");
+        rejectBox.classList.add("hidden");
+      }
+
+      updateModalRoomRecommendations(bookingId ? scheduleBookings.find(b => b.id === bookingId)?.suggestedRoom : null);
+      document.getElementById("assignModal").classList.remove("hidden");
+    }
+
+    function updateModalRoomRecommendations(preferredRoomId = null) {
+      const subjCode = document.getElementById("modalSubjectSelect").value;
+      const subj = findSubjectInfo(currentCareerKey, subjCode);
+      if (subj && !activeModalContext.bookingId) {
+        document.getElementById("modalProfInput").value = subj.prof;
+      }
+
+      const quota = parseInt(document.getElementById("modalQuotaInput").value, 10) || 40;
+      const reqType = document.getElementById("modalReqTypeSelect").value;
+
+      // Validar tope de Docente en el mismo día/bloque
+      const profName = document.getElementById("modalProfInput").value;
+      const teacherConflict = scheduleBookings.find(b => {
+        if (b.id === activeModalContext.bookingId) return false;
+        if (b.day !== activeModalContext.day || b.blockId !== activeModalContext.blockId) return false;
+        const otherSubj = findSubjectInfo(b.career, b.subjectCode);
+        return otherSubj && otherSubj.prof === profName;
+      });
+
+      const conflictBox = document.getElementById("modalConflictWarning");
+      const conflictText = document.getElementById("modalConflictWarningText");
+      if (teacherConflict) {
+        const otherSubj = findSubjectInfo(teacherConflict.career, teacherConflict.subjectCode);
+        conflictBox.classList.remove("hidden");
+        conflictText.innerHTML = `<strong>Alerta de Tope Docente:</strong> El profesor <strong>${profName}</strong> ya está asignado en este mismo bloque a <em>${otherSubj.name}</em> (${careersData[teacherConflict.career].short}).`;
+      } else {
+        conflictBox.classList.add("hidden");
+      }
+
+      const recommendations = computeRoomSuggestions(
+        activeModalContext.day,
+        activeModalContext.blockId,
+        quota,
+        reqType,
+        activeModalContext.bookingId
+      );
+
+      const currentSelected = preferredRoomId || (recommendations.find(r => !r.isOccupied)?.id || recommendations[0].id);
+      document.getElementById("modalSelectedRoomInput").value = currentSelected;
+
+      const listEl = document.getElementById("modalSuggestedRoomsList");
+      listEl.innerHTML = recommendations.slice(0, 6).map((room, idx) => {
+        const isChosen = room.id === currentSelected;
+        const badgeBest = idx === 0 && !room.isOccupied
+          ? `<span class="bg-emerald-600 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded uppercase">★ Mejor Opción Sugerida</span>`
+          : "";
+
+        const occBadge = room.isOccupied
+          ? `<span class="bg-rose-100 text-rose-700 text-[9px] font-bold px-1.5 py-0.2 rounded">Ocupada en MRBS</span>`
+          : `<span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.2 rounded">Libre (${room.score}% match)</span>`;
+
+        const capBadge = room.capacityEnough
+          ? `<span class="text-emerald-700 font-mono font-bold">Cap: ${room.capacity} (OK para ${quota})</span>`
+          : `<span class="text-rose-600 font-mono font-bold">Cap: ${room.capacity} (Faltan ${quota - room.capacity} asientos)</span>`;
+
+        return `
+          <div onclick="selectSuggestedRoomInModal('${room.id}')"
+               class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${
+                 isChosen
+                   ? 'bg-white border-2 border-udec-blue shadow-xs'
+                   : 'bg-white/70 border-slate-200 hover:bg-white'
+               }">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="suggestedRoomRadio" ${isChosen ? 'checked' : ''} class="text-udec-blue focus:ring-udec-blue">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900 text-xs">${room.name}</span>
+                  ${badgeBest}
+                  ${occBadge}
+                </div>
+                <div class="text-[10px] text-slate-500 mt-0.5">
+                  ${capBadge} • ${room.features}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function selectSuggestedRoomInModal(roomId) {
+      document.getElementById("modalSelectedRoomInput").value = roomId;
+      updateModalRoomRecommendations(roomId);
+    }
+
+    function closeAssignModal() {
+      document.getElementById("assignModal").classList.add("hidden");
+    }
+
+    function saveBlockFromModal(e) {
+      e.preventDefault();
+      const subjCode = document.getElementById("modalSubjectSelect").value;
+      const subj = findSubjectInfo(currentCareerKey, subjCode);
+      const quota = parseInt(document.getElementById("modalQuotaInput").value, 10) || subj.quota;
+      const reqType = document.getElementById("modalReqTypeSelect").value;
+      const suggestedRoom = document.getElementById("modalSelectedRoomInput").value;
+      const notes = document.getElementById("modalNotesInput").value;
+
+      if (activeModalContext.bookingId) {
+        const target = scheduleBookings.find(b => b.id === activeModalContext.bookingId);
+        if (target) {
+          target.subjectCode = subjCode;
+          target.sem = subj.sem;
+          target.quota = quota;
+          target.reqType = reqType;
+          target.suggestedRoom = suggestedRoom;
+          target.notes = notes;
+          // Si estaba rechazado y el Jefe de Carrera lo corrigió, pasa a Pendiente de Revisión
+          if (target.status === "rejected") {
+            target.status = "pending";
+            target.rejectReason = null;
+          }
+        }
+        showToast(`Bloque actualizado con sala sugerida ${suggestedRoom}.`);
+      } else {
+        scheduleBookings.push({
+          id: Date.now(),
+          career: currentCareerKey,
+          sem: subj.sem,
+          subjectCode: subjCode,
+          day: activeModalContext.day,
+          blockId: activeModalContext.blockId,
+          reqType: reqType,
+          quota: quota,
+          suggestedRoom: suggestedRoom,
+          status: "pending", // Listo para revisión de Secretaría Académica
+          mrbsRepeatId: null,
+          notes: notes
+        });
+        showToast(`Asignatura ${subj.name} agendada. Sala sugerida: ${suggestedRoom} (Enviada a Secretaría Académica).`);
+      }
+
+      closeAssignModal();
+      refreshAllViews();
+    }
+
+    function deleteBlockFromModal() {
+      if (!activeModalContext.bookingId) return;
+      scheduleBookings = scheduleBookings.filter(b => b.id !== activeModalContext.bookingId);
+      closeAssignModal();
+      refreshAllViews();
+      showToast("Bloque eliminado de la planificación.");
+    }
+
+    // Enviar todos los bloques de la carrera a Secretaría Académica
+    function submitCareerScheduleToSecretaria() {
+      const career = careersData[currentCareerKey];
+      const careerBookings = scheduleBookings.filter(b => b.career === currentCareerKey);
+      let updated = 0;
+      careerBookings.forEach(b => {
+        if (b.status === "draft" || b.status === "rejected") {
+          b.status = "pending";
+          updated++;
+        }
+      });
+
+      const pendingTotal = careerBookings.filter(b => b.status === "pending").length;
+      notificationsLog.unshift({
+        id: Date.now(),
+        time: "Ahora mismo",
+        type: "pending",
+        recipient: "Secretaría Académica (sec.academica.la@udec.cl)",
+        title: `Planificación enviada por Jefatura ${career.short}`,
+        body: `${career.head} envió ${pendingTotal} bloques semestrales de ${career.name} con sugerencia de sala para revisión y pase a MRBS.`
+      });
+
+      refreshAllViews();
+      showToast(`Planificación de ${career.name} enviada a Secretaría Académica (${pendingTotal} bloques en revisión).`);
+    }
+
+    // =========================================================================
+    // 9. BANDEJA DE SECRETARÍA ACADÉMICA (APROBAR -> MRBS / RECHAZAR -> NOTIFICAR)
+    // =========================================================================
+    function renderSecretariaTable() {
+      const tbody = document.getElementById("secretariaTableBody");
+      const careerFilter = document.getElementById("secCareerFilter").value;
+      const statusFilter = document.getElementById("secStatusFilter").value;
+
+      const filtered = scheduleBookings.filter(b => {
+        if (careerFilter !== "all" && b.career !== careerFilter) return false;
+        if (statusFilter !== "all" && b.status !== statusFilter) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No hay solicitudes que coincidan con los filtros seleccionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => {
+        const career = careersData[b.career];
+        const subj = findSubjectInfo(b.career, b.subjectCode) || { name: b.subjectCode, prof: "-" };
+        const dayObj = weekDays.find(d => d.id === b.day);
+        const blockObj = laTimeBlocks.find(bl => bl.id === b.blockId);
+        const roomObj = campusRooms.find(r => r.id === b.suggestedRoom) || { capacity: 50 };
+
+        // Verificar si otra carrera tiene la misma sala en el mismo día/bloque
+        const roomCollision = scheduleBookings.find(other =>
+          other.id !== b.id &&
+          other.day === b.day &&
+          other.blockId === b.blockId &&
+          other.suggestedRoom === b.suggestedRoom &&
+          other.status !== "rejected"
+        );
+
+        let statusHtml = "";
+        if (b.status === "pending") {
+          statusHtml = `<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-full font-bold text-[10px]"><i class="fa-solid fa-hourglass-half"></i> Pendiente Revisión</span>`;
+        } else if (b.status === "approved") {
+          statusHtml = `
+            <div class="flex flex-col items-center">
+              <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold text-[10px]"><i class="fa-solid fa-check-double"></i> Aprobado en MRBS</span>
+              <span class="font-mono text-[9px] text-emerald-700 mt-0.5">${b.mrbsRepeatId || 'REP-2026'}</span>
+            </div>
+          `;
+        } else if (b.status === "rejected") {
+          statusHtml = `
+            <div class="flex flex-col items-center">
+              <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-full font-bold text-[10px]"><i class="fa-solid fa-xmark"></i> Observado</span>
+              <span class="text-[9px] text-rose-600 max-w-[160px] truncate mt-0.5" title="${b.rejectReason || ''}">${b.rejectReason || ''}</span>
+            </div>
+          `;
+        }
+
+        // Selector rápido para que Secretaría Académica pueda confirmar o cambiar la sala sugerida
+        const roomOptionsHtml = campusRooms.map(r =>
+          `<option value="${r.id}" ${r.id === b.suggestedRoom ? 'selected' : ''}>${r.name} (Cap: ${r.capacity})</option>`
+        ).join("");
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3">
+              <span class="font-bold text-udec-navy block">${career.short}</span>
+              <span class="text-[10px] text-slate-500">Semestre ${b.sem}°</span>
+            </td>
+            <td class="p-3">
+              <span class="font-mono text-[10px] font-bold text-udec-blue bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">${b.subjectCode}</span>
+              <div class="font-bold text-slate-800 mt-0.5">${subj.name}</div>
+              ${b.notes ? `<div class="text-[10px] text-slate-500 italic mt-0.5"><i class="fa-regular fa-comment"></i> ${b.notes}</div>` : ''}
+            </td>
+            <td class="p-3">
+              <div class="font-medium text-slate-800">${subj.prof}</div>
+              <span class="font-mono text-[10px] text-slate-500">Cupo: <strong>${b.quota}</strong> est.</span>
+            </td>
+            <td class="p-3 font-mono">
+              <div class="font-bold text-slate-800">${dayObj.name} • ${blockObj.label}</div>
+              <div class="text-[10px] text-slate-500">${blockObj.time}</div>
+            </td>
+            <td class="p-3">
+              <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold uppercase">${b.reqType}</span>
+            </td>
+            <td class="p-3 bg-indigo-50/40 border-x border-indigo-100">
+              <div class="flex items-center gap-1.5">
+                <select onchange="changeSuggestedRoomBySecretaria(${b.id}, this.value)" class="bg-white border border-indigo-300 rounded-lg px-2 py-1 text-xs font-bold text-udec-navy focus:ring-2 focus:ring-udec-blue">
+                  ${roomOptionsHtml}
+                </select>
+              </div>
+              <div class="mt-1 flex items-center gap-2 text-[10px]">
+                <span class="${roomObj.capacity >= b.quota ? 'text-emerald-700' : 'text-rose-600 font-bold'} font-mono">
+                  Aforo: ${b.quota}/${roomObj.capacity}
+                </span>
+                ${roomCollision ? `<span class="text-rose-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Tope con ${careersData[roomCollision.career].short}</span>` : `<span class="text-emerald-700"><i class="fa-solid fa-check"></i> Sin tope</span>`}
+              </div>
+            </td>
+            <td class="p-3 text-center">
+              ${statusHtml}
+            </td>
+            <td class="p-3 text-right whitespace-nowrap">
+              <div class="inline-flex items-center gap-1.5">
+                <button onclick="approveBlockBySecretaria(${b.id})"
+                        class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] shadow-2xs flex items-center gap-1 transition"
+                        title="Aprobar espacio y crear serie semestral en MRBS">
+                  <i class="fa-solid fa-check"></i>
+                  <span>Aprobar ➔ MRBS</span>
+                </button>
+                <button onclick="openRejectModal(${b.id})"
+                        class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-[11px] flex items-center gap-1 transition"
+                        title="Observar o rechazar con notificación al Jefe de Carrera">
+                  <i class="fa-solid fa-xmark"></i>
+                  <span>Rechazar</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function changeSuggestedRoomBySecretaria(bookingId, newRoomId) {
+      const b = scheduleBookings.find(item => item.id === bookingId);
+      if (!b) return;
+      b.suggestedRoom = newRoomId;
+      renderSecretariaTable();
+      showToast(`Espacio ajustado por Secretaría Académica a ${newRoomId}.`);
+    }
+
+    function approveBlockBySecretaria(bookingId) {
+      const b = scheduleBookings.find(item => item.id === bookingId);
+      if (!b) return;
+      const career = careersData[b.career];
+      const subj = findSubjectInfo(b.career, b.subjectCode) || { name: b.subjectCode };
+      const dayObj = weekDays.find(d => d.id === b.day);
+      const blockObj = laTimeBlocks.find(bl => bl.id === b.blockId);
+
+      b.status = "approved";
+      b.rejectReason = null;
+      if (!b.mrbsRepeatId) {
+        b.mrbsRepeatId = `REP-2026-${Math.floor(700 + Math.random() * 299)}`;
+      }
+
+      notificationsLog.unshift({
+        id: Date.now(),
+        time: "Ahora mismo",
+        type: "approved",
+        recipient: `Jefatura ${career.short} (${career.email})`,
+        title: `✅ Aprobado y Sincronizado en MRBS: ${subj.name}`,
+        body: `Secretaría Académica aprobó ${subj.name} (${b.subjectCode}) en ${dayObj.name} ${blockObj.label} — Sala asignada: ${b.suggestedRoom}. Sincronizado automáticamente con MRBS (${b.mrbsRepeatId}).`
+      });
+
+      refreshAllViews();
+      showToast(`Aprobado: ${subj.name} en ${b.suggestedRoom} ➔ Inyectado en MRBS (${b.mrbsRepeatId}) y notificado a ${career.short}.`);
+    }
+
+    function approveAllPendingSecretaria() {
+      const pendings = scheduleBookings.filter(b => b.status === "pending");
+      if (pendings.length === 0) {
+        showToast("No hay bloques pendientes por aprobar.");
+        return;
+      }
+
+      let approvedCount = 0;
+      pendings.forEach(b => {
+        b.status = "approved";
+        b.mrbsRepeatId = `REP-2026-${Math.floor(700 + Math.random() * 299)}`;
+        approvedCount++;
+      });
+
+      notificationsLog.unshift({
+        id: Date.now(),
+        time: "Ahora mismo",
+        type: "approved",
+        recipient: "Todas las Jefaturas de Carrera",
+        title: `✅ Aprobación Masiva Secretaría Académica (${approvedCount} bloques)`,
+        body: `Se aprobaron ${approvedCount} bloques semestrales y se insertaron automáticamente sus series repetitivas en la base de datos MRBS.`
+      });
+
+      refreshAllViews();
+      showToast(`¡${approvedCount} bloques aprobados y sincronizados automáticamente con el calendario MRBS!`);
+    }
+
+    function openRejectModal(bookingId) {
+      rejectingBookingId = bookingId;
+      const b = scheduleBookings.find(item => item.id === bookingId);
+      if (!b) return;
+      const career = careersData[b.career];
+      const subj = findSubjectInfo(b.career, b.subjectCode) || { name: b.subjectCode };
+      const dayObj = weekDays.find(d => d.id === b.day);
+      const blockObj = laTimeBlocks.find(bl => bl.id === b.blockId);
+
+      document.getElementById("rejectModalSubjSummary").textContent =
+        `${career.short} • ${b.subjectCode} ${subj.name} — ${dayObj.name} ${blockObj.label} (Sala sugerida: ${b.suggestedRoom})`;
+      document.getElementById("rejectReasonInput").value = b.rejectReason || "";
+      document.getElementById("rejectModal").classList.remove("hidden");
+    }
+
+    function setQuickRejectReason(text) {
+      document.getElementById("rejectReasonInput").value = text;
+    }
+
+    function closeRejectModal() {
+      document.getElementById("rejectModal").classList.add("hidden");
+      rejectingBookingId = null;
+    }
+
+    function confirmRejectBlock(e) {
+      e.preventDefault();
+      if (!rejectingBookingId) return;
+      const b = scheduleBookings.find(item => item.id === rejectingBookingId);
+      if (!b) return;
+
+      const reason = document.getElementById("rejectReasonInput").value.trim();
+      const career = careersData[b.career];
+      const subj = findSubjectInfo(b.career, b.subjectCode) || { name: b.subjectCode };
+      const dayObj = weekDays.find(d => d.id === b.day);
+      const blockObj = laTimeBlocks.find(bl => bl.id === b.blockId);
+
+      b.status = "rejected";
+      b.mrbsRepeatId = null;
+      b.rejectReason = reason;
+
+      notificationsLog.unshift({
+        id: Date.now(),
+        time: "Ahora mismo",
+        type: "rejected",
+        recipient: `Jefatura ${career.short} (${career.email})`,
+        title: `❌ Solicitud Observada por Secretaría Académica: ${subj.name}`,
+        body: `Rechazado en ${dayObj.name} ${blockObj.label} (${b.suggestedRoom}). Motivo: "${reason}"`
+      });
+
+      closeRejectModal();
+      refreshAllViews();
+      showToast(`Bloque rechazado. Se envió notificación con observación a Jefatura de ${career.short}.`);
+    }
+
+    // =========================================================================
+    // 10. VISOR EN VIVO DEL MOTOR MRBS (SINCRONIZADO CON LAS RESERVAS APROBADAS)
+    // =========================================================================
+    function setMrbsDay(dayId) {
+      currentMrbsDay = dayId;
+      document.querySelectorAll(".mrbs-day-btn").forEach(btn => {
+        if (btn.getAttribute("data-mrbsday") === dayId) {
+          btn.className = "mrbs-day-btn px-3 py-1 rounded-md font-bold bg-emerald-500 text-slate-950";
+        } else {
+          btn.className = "mrbs-day-btn px-3 py-1 rounded-md font-medium text-slate-300 hover:text-white";
+        }
+      });
+      renderMrbsGrid();
+    }
+
+    function renderMrbsGrid() {
+      const thead = document.getElementById("mrbsGridHead");
+      const tbody = document.getElementById("mrbsGridBody");
+
+      // Mostrar las primeras 8 salas principales en la matriz MRBS
+      const roomsToShow = campusRooms.slice(0, 8);
+
+      thead.innerHTML = `
+        <tr class="bg-slate-100 text-slate-700 text-[11px] border-b border-slate-200 uppercase font-bold">
+          <th class="p-2.5 text-center w-32 bg-slate-200 sticky left-0 z-10 border-r border-slate-300">Horario MRBS</th>
+          ${roomsToShow.map(r => `
+            <th class="p-2.5 border-r border-slate-200 min-w-[140px]">
+              <div class="flex items-center justify-between text-udec-navy">
+                <span>${r.name}</span>
+                <span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-mono">Cap ${r.capacity}</span>
+              </div>
+              <div class="text-[9px] text-slate-400 font-normal truncate mt-0.5">${r.features}</div>
+            </th>
+          `).join("")}
+        </tr>
+      `;
+
+      tbody.innerHTML = "";
+      laTimeBlocks.forEach(block => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50";
+
+        let cellsHtml = `
+          <td class="p-2 text-center font-mono bg-slate-100 border-r border-slate-300 sticky left-0 z-10">
+            <div class="font-bold text-slate-800 text-[11px]">${block.label}</div>
+            <div class="text-[9px] text-slate-500">${block.time}</div>
+          </td>
+        `;
+
+        roomsToShow.forEach(room => {
+          // Solo aparecen en MRBS las reservas APROBADAS por Secretaría Académica
+          const approvedMatch = scheduleBookings.find(b =>
+            b.status === "approved" &&
+            b.day === currentMrbsDay &&
+            b.blockId === block.id &&
+            b.suggestedRoom === room.id
+          );
+
+          if (approvedMatch) {
+            const career = careersData[approvedMatch.career];
+            const subj = findSubjectInfo(approvedMatch.career, approvedMatch.subjectCode) || { name: approvedMatch.subjectCode, prof: "" };
+            cellsHtml += `
+              <td class="p-1.5 border-r border-slate-200 align-top">
+                <div class="p-2 rounded-lg bg-emerald-50 border-l-4 border-emerald-600 text-emerald-950 shadow-2xs">
+                  <div class="flex items-center justify-between text-[9px] font-mono font-bold text-emerald-800">
+                    <span>${career.short} • ${approvedMatch.subjectCode}</span>
+                    <span>${approvedMatch.mrbsRepeatId || 'MRBS'}</span>
+                  </div>
+                  <div class="font-bold text-[11px] truncate mt-0.5" title="${subj.name}">${subj.name}</div>
+                  <div class="text-[10px] text-slate-600 truncate">${subj.prof} (${approvedMatch.quota} est.)</div>
+                </div>
+              </td>
+            `;
+          } else {
+            cellsHtml += `
+              <td class="p-1.5 border-r border-slate-200 text-center align-middle">
+                <span class="text-[10px] text-slate-300 font-mono">Disponible</span>
+              </td>
+            `;
+          }
+        });
+
+        tr.innerHTML = cellsHtml;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =========================================================================
+    // 11. DASHBOARD EJECUTIVO & MODAL EXCEL OFICIAL Y SQL MRBS
+    // =========================================================================
+    function renderDashboard() {
+      const careersContainer = document.getElementById("dashboardCareersList");
+      careersContainer.innerHTML = Object.entries(careersData).map(([key, c]) => {
+        const bookings = scheduleBookings.filter(b => b.career === key);
+        const approved = bookings.filter(b => b.status === "approved").length;
+        const pending = bookings.filter(b => b.status === "pending").length;
+        const rejected = bookings.filter(b => b.status === "rejected").length;
+        const total = Math.max(1, bookings.length);
+        const pct = Math.round((approved / total) * 100);
+
+        return `
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div>
+                <span class="font-bold text-xs text-udec-navy">${c.name} (${c.short})</span>
+                <span class="text-[11px] text-slate-500 block">Jefatura: ${c.head} • ${c.subjects.length} asignaturas en malla</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] font-mono font-bold">
+                <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">${approved} MRBS</span>
+                <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${pending} Revisión</span>
+                ${rejected > 0 ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded">${rejected} Obs.</span>` : ''}
+              </div>
+            </div>
+            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const roomsContainer = document.getElementById("dashboardRoomsList");
+      roomsContainer.innerHTML = campusRooms.map(r => {
+        const usedBlocks = scheduleBookings.filter(b => b.suggestedRoom === r.id && b.status !== "rejected").length;
+        const maxWeeklyBlocks = 60; // 12 bloques x 5 días
+        const occPct = Math.min(100, Math.round((usedBlocks / 15) * 100)); // Escalado para visualización demo
+
+        return `
+          <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between gap-3 text-xs">
+            <div>
+              <div class="font-bold text-slate-800">${r.name} <span class="text-[10px] font-mono text-udec-blue">(Cap: ${r.capacity} est.)</span></div>
+              <div class="text-[10px] text-slate-500">${r.features}</div>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-xs font-bold text-udec-navy">${usedBlocks} blq.</span>
+              <div class="w-20 h-1.5 bg-slate-200 rounded-full mt-1 overflow-hidden">
+                <div class="h-full bg-udec-blue rounded-full" style="width: ${occPct}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openExcelPreviewModal() {
+      const career = careersData[currentCareerKey];
+      const semLabel = currentSemesterFilter === "all" ? "Todos los Semestres" : `SEMESTRE N° ${currentSemesterFilter}`;
+      document.getElementById("excelModalTitle").textContent =
+        `CARRERA: ${career.name.toUpperCase()} — ${semLabel} (Formato Oficial UdeC CON SALAS)`;
+
+      const tbody = document.getElementById("excelModalTableBody");
+      tbody.innerHTML = laTimeBlocks.map(block => {
+        const dayCols = weekDays.map(day => {
+          const match = scheduleBookings.find(b =>
+            b.career === currentCareerKey &&
+            b.day === day.id &&
+            b.blockId === block.id &&
+            (currentSemesterFilter === "all" || b.sem.toString() === currentSemesterFilter)
+          );
+          if (!match) {
+            return `<td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5 text-center font-mono"></td>`;
+          }
+          const subj = findSubjectInfo(match.career, match.subjectCode) || { name: match.subjectCode, prof: "" };
+          return `
+            <td class="border border-slate-300 p-1.5 bg-blue-50/40">
+              <strong>${subj.name}</strong> (${match.quota}) ${career.short}, ${match.subjectCode}, ${subj.prof}
+            </td>
+            <td class="border border-slate-300 p-1.5 text-center font-mono font-bold bg-amber-50/60 text-udec-navy">
+              ${match.suggestedRoom}
+            </td>
+          `;
+        }).join("");
+
+        return `
+          <tr>
+            <td class="border border-slate-300 p-1.5 font-mono font-bold text-center bg-slate-50">${block.time}</td>
+            ${dayCols}
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("excelPreviewModal").classList.remove("hidden");
+    }
+
+    function closeExcelPreviewModal() {
+      document.getElementById("excelPreviewModal").classList.add("hidden");
+    }
+
+    function openMrbsSqlModal() {
+      const approvedSample = scheduleBookings.find(b => b.status === "approved") || scheduleBookings[0];
+      const subj = findSubjectInfo(approvedSample.career, approvedSample.subjectCode) || { name: "Álgebra I", prof: "Felipe Cisterna" };
+
+      const sqlExample = `-- Transacción ejecutada automáticamente cuando Secretaría Académica aprueba un bloque:
+START TRANSACTION;
+
+-- 1. Crear la serie semanal repetitiva para todo el 1er Semestre 2026 en 'mrbs_repeat'
+INSERT INTO mrbs_repeat (
+  start_time, end_time, rep_type, end_date, rep_opt,
+  room_id, create_by, name, type, description,
+  status, udec_career_code, udec_subject_code, udec_quota
+) VALUES (
+  1772453700,                  -- Inicio bloque (08:15)
+  1772456400,                  -- Fin bloque (09:00)
+  2,                           -- rep_type = 2 (Semanal en MRBS)
+  1783555200,                  -- Fin del 1er Semestre 2026
+  '0100000',                   -- Día de la semana (Lunes)
+  (SELECT id FROM mrbs_room WHERE room_name = '${approvedSample.suggestedRoom}' LIMIT 1),
+  'sec.academica.la@udec.cl',
+  '${approvedSample.subjectCode} - ${subj.name} (${careersData[approvedSample.career].short})',
+  'C',                         -- Tipo 'C' = Docencia / Cátedra Pregrado
+  'Docente: ${subj.prof} | Cupo: ${approvedSample.quota} est. | Aprobado por Secretaría Académica',
+  0,                           -- Confirmado
+  '${careersData[approvedSample.career].short}',
+  '${approvedSample.subjectCode}',
+  ${approvedSample.quota}
+);
+
+SET @repeat_id = LAST_INSERT_ID();
+
+-- 2. Generar las 18 ocurrencias semanales del semestre en 'mrbs_entry'
+INSERT INTO mrbs_entry (start_time, end_time, entry_type, repeat_id, room_id, create_by, name, type, description)
+SELECT 
+   UNIX_TIMESTAMP(DATE_ADD('2026-03-09 08:15:00', INTERVAL seq.week_num WEEK)),
+   UNIX_TIMESTAMP(DATE_ADD('2026-03-09 09:00:00', INTERVAL seq.week_num WEEK)),
+  1, @repeat_id,
+  (SELECT id FROM mrbs_room WHERE room_name = '${approvedSample.suggestedRoom}' LIMIT 1),
+  'sec.academica.la@udec.cl',
+  '${approvedSample.subjectCode} - ${subj.name}',
+  'C',
+  'Sincronizado desde Portal Jefes de Carrera (${approvedSample.mrbsRepeatId || 'REP-2026-401'})'
+FROM semester_weeks_seq seq;
+
+COMMIT;`;
+
+      document.getElementById("mrbsSqlCodeBlock").textContent = sqlExample;
+      document.getElementById("mrbsSqlModal").classList.remove("hidden");
+    }
+
+    function closeMrbsSqlModal() {
+      document.getElementById("mrbsSqlModal").classList.add("hidden");
+    }
+
+    // =========================================================================
+    // 12. NOTIFICACIONES, KPIs Y REFRESCO GENERAL
+    // =========================================================================
+    function toggleNotificationDrawer() {
+      const drawer = document.getElementById("notifDrawer");
+      drawer.classList.toggle("translate-x-full");
+      renderNotifications();
+    }
+
+    function renderNotifications() {
+      const container = document.getElementById("notifListContainer");
+      document.getElementById("notifCounterBadge").textContent = notificationsLog.length;
+
+      container.innerHTML = notificationsLog.map(n => {
+        let icon = `<i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>`;
+        let border = "border-l-4 border-emerald-500 bg-emerald-50/40";
+        if (n.type === "rejected") {
+          icon = `<i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm"></i>`;
+          border = "border-l-4 border-rose-500 bg-rose-50/50";
+        } else if (n.type === "pending") {
+          icon = `<i class="fa-solid fa-paper-plane text-amber-600 text-sm"></i>`;
+          border = "border-l-4 border-amber-500 bg-amber-50/40";
+        }
+
+        return `
+          <div class="p-3 rounded-lg border border-slate-200 ${border} text-xs space-y-1">
+            <div class="flex items-center justify-between text-[10px] text-slate-500">
+              <span class="font-mono font-semibold">${n.recipient}</span>
+              <span>${n.time}</span>
+            </div>
+            <div class="font-bold text-slate-900 flex items-center gap-1.5">
+              ${icon}
+              <span>${n.title}</span>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed">${n.body}</p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateKPIs() {
+      const career = careersData[currentCareerKey];
+      const allPending = scheduleBookings.filter(b => b.status === "pending").length;
+      const allApproved = scheduleBookings.filter(b => b.status === "approved").length;
+      const allRejected = scheduleBookings.filter(b => b.status === "rejected").length;
+
+      document.getElementById("kpiTotalSubjects").textContent = career.subjects.length;
+      document.getElementById("kpiTotalBlocks").textContent = scheduleBookings.length;
+      document.getElementById("kpiPendingBlocks").textContent = allPending;
+      document.getElementById("kpiApprovedBlocks").textContent = allApproved;
+      document.getElementById("kpiRejectedBlocks").textContent = allRejected;
+
+      document.getElementById("pendingBadgeHeader").textContent = allPending;
+      document.getElementById("pendingBadgeTab").textContent = `${allPending} pendientes`;
+      document.getElementById("notifCounterBadge").textContent = notificationsLog.length;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toastMessage");
+      document.getElementById("toastText").textContent = msg;
+      toast.classList.remove("translate-y-24", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+      setTimeout(() => {
+        toast.classList.add("translate-y-24", "opacity-0");
+        toast.classList.remove("translate-y-0", "opacity-100");
+      }, 3600);
+    }
+
+    function refreshAllViews() {
+      updateKPIs();
+      updateActiveSubjectBanner();
+      renderPreloadedSubjectsList();
+      renderPlannerGrid();
+      renderSecretariaTable();
+      renderMrbsGrid();
+      renderDashboard();
+      renderNotifications();
+    }
+
+    window.onload = function() {
+      refreshAllViews();
+    };
+  </script>
+</body>
+</html>

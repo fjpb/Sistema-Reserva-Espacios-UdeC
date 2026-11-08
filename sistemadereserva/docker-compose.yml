@@ -1,0 +1,62 @@
+name: sistemadereserva
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: sistemadereserva_db
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: unidadti
+      MYSQL_USER: unidadti
+      MYSQL_PASSWORD: 6gsi26SzTZzmwRQW
+    volumes:
+      - ./DB:/docker-entrypoint-initdb.d:ro
+      - sistemadereserva_db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistemadereserva_web
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    environment:
+      DB_HOST: db
+      DB_DATABASE: unidadti
+      DB_LOGIN: unidadti
+      DB_PASSWORD: 6gsi26SzTZzmwRQW
+      DB_TBL_PREFIX: mrbs_
+    volumes:
+      - ./mrbs:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: sistemadereserva_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: unidadti
+      PMA_PASSWORD: 6gsi26SzTZzmwRQW
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  sistemadereserva_db_data:

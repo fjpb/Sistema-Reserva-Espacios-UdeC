@@ -356,6 +356,24 @@ Este documento registra cronológicamente todas las acciones técnicas, configur
      - Inclusión de `actualizar_salas_udec.sql` y sincronización de `functions_table.inc`, `custom.js`, `custom.css` y `LEEME_INSTRUCCIONES.txt` en `Archivos_Para_Subir_Servidor/` y `Archivos_Para_Subir_Servidor.zip`.
 - **Resultado:** Base de datos local y paquete de despliegue 100% actualizados con las capacidades, tecnologías y nuevos laboratorios del Campus Los Ángeles.
 
+---
+
+### [2026-11-08] - Fase 19: Consolidación en Repositorio GitHub y Paquete Completo para Nuevo Hosting (FTP + phpMyAdmin)
+- **Objetivo:** Subir todo el proyecto y la base de datos consolidada al repositorio oficial https://github.com/fjpb/Sistema-Reserva-Espacios-UdeC y preparar una carpeta lista para desplegar el sistema desde cero en un nuevo hosting mediante FTP y phpMyAdmin.
+- **Acciones realizadas:**
+  1. **Consolidación de Base de Datos (`Hosting_Nuevo_FTP_phpMyAdmin/Base_de_Datos_phpMyAdmin/`):**
+     - Generación de `unidadti_completa_udec.sql` (8.3 MB) y su versión comprimida `unidadti_completa_udec.sql.zip` (742 KB, ideal para importar en 1 clic en phpMyAdmin sin bloqueos por límite de tamaño de subida).
+     - Incluye en un solo archivo las 9 tablas base, las +28.500 reservas históricas, la columna personalizada `solicitante` en `mrbs_entry` y `mrbs_repeat`, el nuevo `Edificio de Laboratorios` (`id = 21`) y las 68 salas actualizadas con capacidades y equipamiento.
+     - Actualización de `sistemadereserva/DB/z_actualizar_salas_udec.sql` y `Archivos_Para_Subir_Servidor/actualizar_salas_udec.sql` para incluir también la creación idempotente de la columna `solicitante` y el ajuste de `AUTO_INCREMENT`.
+  2. **Empaquetado Completo para Nuevo Hosting (`Hosting_Nuevo_FTP_phpMyAdmin/`):**
+     - `Archivos_Web_FTP/` y `Archivos_Web_FTP.zip` (8.4 MB): contiene el 100% del sistema MRBS junto con el Tema Institucional UdeC, `admin_pending.php`, `admin_types.php`, Hover Cards y Ficha Técnica de Recintos.
+     - `INSTRUCCIONES_HOSTING_FTP_Y_PHPMYADMIN.txt`: guía paso a paso para importar la BD en phpMyAdmin, configurar las credenciales en `config.inc.php`, subir por FTP y asignar permisos a `Themes/udec/types_config.json`.
+  3. **Sincronización con GitHub:**
+     - Creación de `.gitignore` y `README.md` raíz documentando la arquitectura y los pasos de despliegue.
+     - Inicialización del repositorio Git y push completo a la rama `main` en `https://github.com/fjpb/Sistema-Reserva-Espacios-UdeC`.
+- **Resultado:** Repositorio centralizado en GitHub y paquete integral listo para poner en marcha el sistema en cualquier nuevo hosting con FTP y phpMyAdmin.
+
+
 
 
 

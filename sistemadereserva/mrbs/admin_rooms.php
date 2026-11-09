@@ -977,7 +977,7 @@ print_header($context);
 
         <!-- Footer Tarjeta con Acciones -->
         <div class="udec-card-footer">
-          <a href="<?php echo "day.php?year=" . date('Y') . "&month=" . date('m') . "&day=" . date('d') . "&area=" . $aid . "&room=" . $rid; ?>"
+          <a href="<?php echo htmlspecialchars(multisite("index.php?view=day&view_all=0&page_date=" . date('Y-m-d') . "&area=" . $aid . "&room=" . $rid)); ?>"
              class="udec-card-btn-action" title="Ver programación de hoy de esta sala" target="_blank">
             <i class="fa-regular fa-calendar-days"></i> Ver Horario
           </a>
@@ -1120,7 +1120,7 @@ print_header($context);
               </div>
             </td>
             <td style="text-align: right; white-space: nowrap;">
-              <a href="<?php echo "day.php?year=" . date('Y') . "&month=" . date('m') . "&day=" . date('d') . "&area=" . $aid . "&room=" . $rid; ?>"
+              <a href="<?php echo htmlspecialchars(multisite("index.php?view=day&view_all=0&page_date=" . date('Y-m-d') . "&area=" . $aid . "&room=" . $rid)); ?>"
                  class="udec-card-btn-action" title="Ver horario" target="_blank" style="margin-right: 4px;">
                 <i class="fa-regular fa-calendar-days"></i>
               </a>

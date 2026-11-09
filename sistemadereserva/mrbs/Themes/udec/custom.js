@@ -480,7 +480,8 @@
     $indicator.css({
       top: Math.round(calculatedY) + 'px',
       left: Math.round(colLeft) + 'px',
-      width: Math.round(colWidth) + 'px'
+      width: Math.round(colWidth) + 'px',
+      zIndex: 95
     }).show();
   }
 
@@ -532,6 +533,47 @@
       });
     }
 
+    // Alerta institucional de Mantención o Fuera de Servicio
+    let maintHtml = '';
+    const roomCustom = ($thead.attr('data-current-room-custom') || '').trim();
+    if (roomCustom) {
+      try {
+        const customObj = JSON.parse(roomCustom);
+        if (customObj && customObj.udec_maintenance && customObj.udec_maintenance.enabled) {
+          const m = customObj.udec_maintenance;
+          const isOut = (m.mode === 'fuera_de_servicio');
+          const icon = isOut ? 'fa-ban' : 'fa-screwdriver-wrench';
+          const label = isOut ? 'FUERA DE SERVICIO' : 'EN MANTENCIÓN';
+          const alertClass = isOut ? 'out-service' : 'maint';
+
+          function fmtDt(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return iso.replace('T', ' ');
+            const pad = n => n < 10 ? '0' + n : n;
+            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          }
+
+          let pText = '';
+          if (m.from && m.to) {
+            pText = ` (Desde: ${fmtDt(m.from)} hasta: ${fmtDt(m.to)})`;
+          } else if (m.from) {
+            pText = ` (Desde: ${fmtDt(m.from)})`;
+          } else if (m.to) {
+            pText = ` (Hasta: ${fmtDt(m.to)})`;
+          }
+          const reasonText = m.reason ? ` — Motivo: ${$('<div>').text(m.reason).html()}` : '';
+
+          maintHtml = `
+            <div class="udec-rmb-maint-alert ${alertClass}">
+              <i class="fa-solid ${icon}"></i>
+              <span><strong>AVISO:</strong> Este recinto se encuentra <strong>${label}</strong>${pText}${reasonText}</span>
+            </div>
+          `;
+        }
+      } catch (e) {}
+    }
+
     const bannerHtml = `
       <div id="udecRoomMetaBanner" class="udec-room-meta-banner">
         <div class="udec-rmb-title">
@@ -542,6 +584,7 @@
           ${capHtml}
           ${descHtml}
         </div>
+        ${maintHtml}
       </div>
     `;
 

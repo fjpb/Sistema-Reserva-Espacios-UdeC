@@ -121,6 +121,17 @@ function get_entry_classes(array $entry) : array
     }
   }
 
+  // Estilos visuales de alerta para Mantención y Fuera de Servicio
+  $entry_name = (string)($entry['name'] ?? '');
+  if (stripos($entry_name, 'MANTENCIÓN') !== false || stripos($entry_name, 'MANTENCION') !== false)
+  {
+    $classes[] = 'udec-entry-maintenance';
+  }
+  elseif (stripos($entry_name, 'FUERA DE SERVICIO') !== false)
+  {
+    $classes[] = 'udec-entry-out-of-service';
+  }
+
   return $classes;
 }
 
@@ -155,6 +166,129 @@ function get_hover_time_slot_string(int $start_time, int $end_time, int $room_id
   }
 
   return hour_min($start_time) . ' - ' . hour_min($end_time);
+}
+
+
+// Obtiene el custom_html de una sala desde la BD (con caché estática de proceso)
+function get_room_custom_html_cached(int $room_id): ?string
+{
+  static $custom_cache = array();
+  if ($room_id <= 0)
+  {
+    return null;
+  }
+  if (array_key_exists($room_id, $custom_cache))
+  {
+    return $custom_cache[$room_id];
+  }
+
+  try
+  {
+    $res = db()->query("SELECT custom_html FROM " . _tbl('room') . " WHERE id = ? LIMIT 1", array($room_id));
+    if ($res->count() > 0)
+    {
+      $row = $res->next_row_keyed();
+      $custom_cache[$room_id] = $row['custom_html'] ?? null;
+      return $custom_cache[$room_id];
+    }
+  }
+  catch (\Throwable $e)
+  {
+    // Silencioso en caso de error
+  }
+  $custom_cache[$room_id] = null;
+  return null;
+}
+
+
+// Parsea y cachea la configuración de mantención de una sala
+function get_room_maintenance_info(int $room_id): array
+{
+  static $maint_cache = array();
+  if (isset($maint_cache[$room_id]))
+  {
+    return $maint_cache[$room_id];
+  }
+
+  $custom_html = get_room_custom_html_cached($room_id);
+  if (empty($custom_html))
+  {
+    $maint_cache[$room_id] = array('enabled' => false);
+    return $maint_cache[$room_id];
+  }
+
+  $json = json_decode($custom_html, true);
+  if (!is_array($json) || empty($json['udec_maintenance']) || empty($json['udec_maintenance']['enabled']))
+  {
+    $maint_cache[$room_id] = array('enabled' => false);
+    return $maint_cache[$room_id];
+  }
+
+  $m = $json['udec_maintenance'];
+  $from = (string)($m['from'] ?? '');
+  $to   = (string)($m['to'] ?? '');
+  $from_ts = !empty($m['start_ts']) ? (int)$m['start_ts'] : (!empty($from) ? (int)strtotime($from) : 0);
+  $to_ts   = !empty($m['end_ts'])   ? (int)$m['end_ts']   : (!empty($to)   ? (int)strtotime($to)   : 0);
+
+  $maint_cache[$room_id] = array(
+    'enabled'  => true,
+    'mode'     => (($m['mode'] ?? 'mantencion') === 'fuera_de_servicio') ? 'fuera_de_servicio' : 'mantencion',
+    'from'     => $from,
+    'to'       => $to,
+    'from_ts'  => $from_ts,
+    'to_ts'    => $to_ts,
+    'reason'   => (string)($m['reason'] ?? ''),
+    'entry_id' => (int)($m['entry_id'] ?? 0)
+  );
+  return $maint_cache[$room_id];
+}
+
+
+// Determina si una sala se encuentra en mantención durante el slot o día indicado
+function get_slot_room_maintenance(int $room_id, int $year, int $month, int $day, int $s = 0): ?array
+{
+  if ($room_id <= 0)
+  {
+    return null;
+  }
+
+  $m = get_room_maintenance_info($room_id);
+  if (empty($m['enabled']))
+  {
+    return null;
+  }
+
+  // Si no hay límites temporales, está permanentemente activa
+  if ($m['from_ts'] === 0 && $m['to_ts'] === 0)
+  {
+    return $m;
+  }
+
+  $day_start = mktime(0, 0, 0, $month, $day, $year);
+  $day_end   = mktime(23, 59, 59, $month, $day, $year);
+
+  // Si se pasan segundos nominales del slot
+  if ($s > 0)
+  {
+    $slot_ts = mktime(0, 0, $s, $month, $day, $year);
+    $match_from = ($m['from_ts'] === 0 || $m['from_ts'] <= ($slot_ts + 3600));
+    $match_to   = ($m['to_ts'] === 0   || $m['to_ts'] >= $slot_ts);
+    if ($match_from && $match_to)
+    {
+      return $m;
+    }
+  }
+  else
+  {
+    $match_from = ($m['from_ts'] === 0 || $m['from_ts'] <= $day_end);
+    $match_to   = ($m['to_ts'] === 0   || $m['to_ts'] >= $day_start);
+    if ($match_from && $match_to)
+    {
+      return $m;
+    }
+  }
+
+  return null;
 }
 
 
@@ -223,10 +357,50 @@ function cell_html(array $cell, array $query_vars, bool $is_invalid = false) : s
     // If the room isn't booked then allow it to be booked
     if (empty($cell))
     {
+      $slot_maint = null;
+      if ($room_id !== null && (int)$room_id > 0)
+      {
+        $slot_year  = (int)($query_vars['new_times']['year'] ?? ($query_vars['new_periods']['year'] ?? 0));
+        $slot_month = (int)($query_vars['new_times']['month'] ?? ($query_vars['new_periods']['month'] ?? 0));
+        $slot_day   = (int)($query_vars['new_times']['day'] ?? ($query_vars['new_periods']['day'] ?? 0));
+        $slot_s     = (int)($query_vars['new_times']['time'] ?? 0);
+        if ($slot_year > 0 && $slot_month > 0 && $slot_day > 0)
+        {
+          $slot_maint = get_slot_room_maintenance((int)$room_id, $slot_year, $slot_month, $slot_day, $slot_s);
+        }
+      }
+
+      if ($slot_maint !== null && !empty($slot_maint['enabled']))
+      {
+        $is_out_serv = ($slot_maint['mode'] === 'fuera_de_servicio');
+        $maint_cls = $is_out_serv ? 'udec-entry-out-of-service' : 'udec-entry-maintenance';
+        $maint_icon = $is_out_serv ? '<i class="fa-solid fa-ban"></i>' : '<i class="fa-solid fa-screwdriver-wrench"></i>';
+        $maint_tag = $is_out_serv ? 'FUERA DE SERVICIO' : 'EN MANTENCIÓN';
+        $maint_reason = !empty($slot_maint['reason']) ? $slot_maint['reason'] : ($is_out_serv ? 'Recinto fuera de servicio temporal' : 'Mantención técnica programada');
+
+        $html .= '<div class="booking ' . $maint_cls . '" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;">';
+        if (is_admin() || is_book_admin((int)$room_id))
+        {
+          $html .= '<a href="admin_rooms.php" title="Administrar sala en Gestión de Salas">';
+        }
+        $html .= '<div class="udec-cell-maint-inner">';
+        $html .= '  <span class="udec-cell-maint-tag">' . $maint_icon . ' ' . $maint_tag . '</span>';
+        $html .= '  <span class="udec-cell-maint-reason"><strong>Motivo:</strong> ' . htmlspecialchars($maint_reason) . '</span>';
+        if (!empty($slot_maint['from']) && !empty($slot_maint['to']))
+        {
+          $html .= '  <span class="udec-cell-maint-dates">' . htmlspecialchars(date('d/m H:i', strtotime($slot_maint['from']))) . ' al ' . htmlspecialchars(date('d/m H:i', strtotime($slot_maint['to']))) . '</span>';
+        }
+        $html .= '</div>';
+        if (is_admin() || is_book_admin((int)$room_id))
+        {
+          $html .= '</a>';
+        }
+        $html .= '</div>';
+      }
       // Don't provide a link if the slot doesn't really exist or if the user is logged in, but not a booking admin,
       // and it's a holiday/weekend and bookings on holidays/weekends are not allowed.  (We provide a link if they
       // are not logged in because they might want to click and login as an admin).
-      if ($is_invalid ||
+      elseif ($is_invalid ||
           ((null !== session()->getCurrentUser()) && !is_book_admin($query_vars['new_times']['room']) &&
             (($prevent_booking_on_holidays && in_array('holiday', $classes)) ||
              ($prevent_booking_on_weekends && in_array('weekend', $classes)))))
@@ -300,7 +474,36 @@ function cell_html(array $cell, array $query_vars, bool $is_invalid = false) : s
                    ' data-type="' . $booking['type'] . '"' .
                    ' data-type-name="' . htmlspecialchars($hover_type_name) . '"' .
                    ' data-desc="' . htmlspecialchars($hover_desc) . '">';
-        $html .= htmlspecialchars($booking['name']) . '</a>';
+
+        $is_maintenance = (stripos($booking['name'], 'MANTENCIÓN') !== false || stripos($booking['name'], 'MANTENCION') !== false);
+        $is_out_of_service = (stripos($booking['name'], 'FUERA DE SERVICIO') !== false);
+
+        if ($is_maintenance || $is_out_of_service)
+        {
+          $maint_icon = $is_out_of_service ? '<i class="fa-solid fa-ban"></i>' : '<i class="fa-solid fa-screwdriver-wrench"></i>';
+          $maint_tag = $is_out_of_service ? 'FUERA DE SERVICIO' : 'EN MANTENCIÓN';
+          
+          $motivo = !empty($booking['description']) ? trim($booking['description']) : '';
+          if (empty($motivo) && strpos($booking['name'], ':') !== false)
+          {
+            $parts = explode(':', $booking['name'], 2);
+            $motivo = trim($parts[1]);
+          }
+          if (empty($motivo))
+          {
+            $motivo = $is_out_of_service ? 'Recinto fuera de servicio temporal' : 'Mantención técnica programada';
+          }
+
+          $html .= '<div class="udec-cell-maint-inner">';
+          $html .= '  <span class="udec-cell-maint-tag">' . $maint_icon . ' ' . $maint_tag . '</span>';
+          $html .= '  <span class="udec-cell-maint-reason"><strong>Motivo:</strong> ' . htmlspecialchars($motivo) . '</span>';
+          $html .= '</div>';
+        }
+        else
+        {
+          $html .= htmlspecialchars($booking['name']);
+        }
+        $html .= '</a>';
         $html .= "</div>";
       }
     }
@@ -1340,6 +1543,8 @@ function week_room_table_innerhtml(string $view, int $view_all, int $year, int $
     $thead .= ' data-current-room-name="' . htmlspecialchars((string)($current_room_details['room_name'] ?? '')) . '"';
     $thead .= ' data-current-room-cap="' . htmlspecialchars((string)($current_room_details['capacity'] ?? 0)) . '"';
     $thead .= ' data-current-room-desc="' . htmlspecialchars((string)($current_room_details['description'] ?? '')) . '"';
+    $thead .= ' data-current-room-custom="' . htmlspecialchars((string)($current_room_details['custom_html'] ?? '')) . '"';
+    $thead .= ' data-current-room-disabled="' . htmlspecialchars((string)($current_room_details['disabled'] ?? 0)) . '"';
   }
 
   $slots = get_slots($month, $day_start_week, $year, DAYS_PER_WEEK);
@@ -1563,6 +1768,8 @@ function get_table_head(?int $room_id = null) : string
       $html .= ' data-current-room-name="' . htmlspecialchars((string)($current_room_details['room_name'] ?? '')) . '"';
       $html .= ' data-current-room-cap="' . htmlspecialchars((string)($current_room_details['capacity'] ?? 0)) . '"';
       $html .= ' data-current-room-desc="' . htmlspecialchars((string)($current_room_details['description'] ?? '')) . '"';
+      $html .= ' data-current-room-custom="' . htmlspecialchars((string)($current_room_details['custom_html'] ?? '')) . '"';
+      $html .= ' data-current-room-disabled="' . htmlspecialchars((string)($current_room_details['disabled'] ?? 0)) . '"';
     }
   }
   $html .= ">\n";

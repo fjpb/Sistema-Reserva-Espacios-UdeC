@@ -198,7 +198,9 @@ function print_menu_items(string $query) : void
     $menu_items['kiosk'] = array('file' => 'kiosk.php', 'icon' => 'fa-display');
   }
 
-  $menu_items['rooms'] = array('file' => 'admin.php', 'icon' => 'fa-building');
+  // Selección inteligente entre Versión Moderna (por defecto) o Versión Clásica de Salas
+  $rooms_target = (isset($_COOKIE['mrbs_rooms_view']) && $_COOKIE['mrbs_rooms_view'] === 'classic') ? 'admin.php' : 'admin_rooms.php';
+  $menu_items['rooms'] = array('file' => $rooms_target, 'icon' => 'fa-building');
   $menu_items['admin_pending'] = array('file' => 'admin_pending.php', 'icon' => 'fa-clock-rotate-left');
   $menu_items['admin_types'] = array('file' => 'admin_types.php', 'icon' => 'fa-palette');
 

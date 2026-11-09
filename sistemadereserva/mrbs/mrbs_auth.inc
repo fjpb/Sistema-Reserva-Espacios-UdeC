@@ -111,6 +111,7 @@ function get_page_level($page)
     // cases write access for their own entries.   Where necessary further checks are
     // made within the page to prevent ordinary users gaining access to admin features.
     case 'admin.php':
+    case 'admin_rooms.php':
     case 'approve_entry_handler.php':   // Ordinary users are allowed to remind admins
     case 'edit_message.php':            // Booking admins can edit messages
     case 'edit_message_handler.php':    // Booking admins can edit messages

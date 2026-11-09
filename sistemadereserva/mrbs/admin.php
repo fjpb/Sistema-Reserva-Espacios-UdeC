@@ -17,6 +17,13 @@ use MRBS\Form\Form;
 
 require "defaultincludes.inc";
 
+// Guardar preferencia de versión clásica si fue solicitada por parámetro
+if (isset($_GET['set_view']) && $_GET['set_view'] === 'classic')
+{
+  setcookie('mrbs_rooms_view', 'classic', time() + 31536000, '/');
+  $_COOKIE['mrbs_rooms_view'] = 'classic';
+}
+
 
 function generate_room_delete_form(int $room, int $area) : void
 {
@@ -253,6 +260,24 @@ $context = array(
   );
 
 print_header($context);
+
+// Banner para conmutar al Administrador Moderno de Salas
+?>
+<div class="udec-view-switcher-banner">
+  <div class="udec-view-switcher-content">
+    <div class="udec-view-switcher-icon">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+    <div class="udec-view-switcher-text">
+      <strong>Estás en la Versión Clásica de Salas</strong>
+      <span>¿Prefieres ver el campus completo en tarjetas interactivas, con filtros rápidos y edición sin recargas?</span>
+    </div>
+    <a href="admin_rooms.php?set_view=modern" class="udec-view-switcher-btn">
+      <i class="fa-solid fa-sparkles"></i> Probar Nuevo Administrador Moderno →
+    </a>
+  </div>
+</div>
+<?php
 
 // Get the details we need for this area
 if (isset($area))

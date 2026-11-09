@@ -173,6 +173,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         if (!empty($_POST['equip_ac']))        { $equip_items[] = 'A/C'; }
         if (!empty($_POST['equip_tv']))        { $equip_items[] = 'TV'; }
 
+        // Agregar equipamiento personalizado si fue ingresado dinámicamente
+        $custom_equip_raw = trim((string)($_POST['custom_equip'] ?? ''));
+        if ($custom_equip_raw !== '')
+        {
+          $c_items = array_map('trim', explode(',', $custom_equip_raw));
+          foreach ($c_items as $ci)
+          {
+            if ($ci !== '' && !in_array($ci, $equip_items, true))
+            {
+              $equip_items[] = $ci;
+            }
+          }
+        }
+
         // Componer descripción institucional: Tipo: [Tipo] | [Equipamiento] | [Notas]
         $desc_parts = array();
         if ($room_type !== '')
@@ -541,7 +555,8 @@ function parse_room_description(?string $desc): array
     'type' => 'Normal',
     'equip' => array(),
     'notes' => '',
-    'raw_equip' => array()
+    'raw_equip' => array(),
+    'custom_equip' => array()
   );
 
   if (empty($desc))
@@ -550,29 +565,57 @@ function parse_room_description(?string $desc): array
   }
 
   $parts = array_map('trim', explode('|', $desc));
-  foreach ($parts as $p)
+  foreach ($parts as $idx => $p)
   {
     if (stripos($p, 'tipo:') === 0)
     {
       $res['type'] = trim(substr($p, 5));
     }
+    elseif (stripos($p, 'notas:') === 0 || stripos($p, 'obs:') === 0)
+    {
+      $note_val = trim(substr($p, strpos($p, ':') + 1));
+      $res['notes'] .= ($res['notes'] !== '' ? ' | ' : '') . $note_val;
+    }
     else
     {
       $lower = mb_strtolower($p, 'UTF-8');
-      $is_equip = false;
-      if (strpos($lower, 'proyector') !== false) { $res['equip']['proyector'] = true; $is_equip = true; }
-      if (strpos($lower, 'táctil') !== false || strpos($lower, 'tactil') !== false) { $res['equip']['tactil'] = true; $is_equip = true; }
-      if (strpos($lower, 'pc') !== false) { $res['equip']['pc'] = true; $is_equip = true; }
-      if (strpos($lower, 'audio') !== false) { $res['equip']['audio'] = true; $is_equip = true; }
-      if (strpos($lower, 'a/c') !== false || strpos($lower, 'aire') !== false) { $res['equip']['ac'] = true; $is_equip = true; }
-      if (strpos($lower, 'tv') !== false) { $res['equip']['tv'] = true; $is_equip = true; }
+      $is_known_equip = (
+        strpos($lower, 'proyector') !== false ||
+        strpos($lower, 'táctil') !== false || strpos($lower, 'tactil') !== false ||
+        strpos($lower, 'pc') !== false ||
+        strpos($lower, 'audio') !== false ||
+        strpos($lower, 'a/c') !== false || strpos($lower, 'aire') !== false ||
+        strpos($lower, 'tv') !== false ||
+        strpos($lower, 'cámara') !== false || strpos($lower, 'camara') !== false ||
+        strpos($lower, 'pizarra') !== false || strpos($lower, 'microf') !== false ||
+        strpos($lower, 'telón') !== false || strpos($lower, 'telon') !== false ||
+        strpos($lower, 'laptop') !== false ||
+        strpos($p, ',') !== false
+      );
 
-      if ($is_equip)
+      // Si es la segunda parte y no empieza con palabras de ubicación, o detecta equipamiento
+      if ($is_known_equip || ($idx === 1 && count($parts) > 1 && !preg_match('/^(piso|edificio|sector|ubicaci[oó]n|ala|bloque)/iu', $p)))
       {
         $items = array_map('trim', explode(',', $p));
         foreach ($items as $it)
         {
-          if ($it !== '') { $res['raw_equip'][] = $it; }
+          if ($it === '') continue;
+          $it_lower = mb_strtolower($it, 'UTF-8');
+          $res['raw_equip'][] = $it;
+
+          // Mapear a checkboxes estándar si coincide
+          $matched_std = false;
+          if (strpos($it_lower, 'proyector') !== false) { $res['equip']['proyector'] = true; $matched_std = true; }
+          if (strpos($it_lower, 'táctil') !== false || strpos($it_lower, 'tactil') !== false) { $res['equip']['tactil'] = true; $matched_std = true; }
+          if (strpos($it_lower, 'pc') !== false) { $res['equip']['pc'] = true; $matched_std = true; }
+          if (strpos($it_lower, 'audio') !== false) { $res['equip']['audio'] = true; $matched_std = true; }
+          if (strpos($it_lower, 'a/c') !== false || strpos($it_lower, 'aire') !== false) { $res['equip']['ac'] = true; $matched_std = true; }
+          if (strpos($it_lower, 'tv') !== false) { $res['equip']['tv'] = true; $matched_std = true; }
+
+          if (!$matched_std)
+          {
+            $res['custom_equip'][] = $it;
+          }
         }
       }
       else
@@ -810,17 +853,19 @@ print_header($context);
 
       // JSON metadata for the drawer
       $meta_json = htmlspecialchars(json_encode(array(
-        'id'          => $rid,
-        'area_id'     => $aid,
-        'room_name'   => $r['room_name'],
-        'capacity'    => (int)$r['capacity'],
-        'email'       => $r['room_admin_email'] ?? '',
-        'disabled'    => (int)$r['disabled'],
-        'type'        => $parsed['type'],
-        'equip'       => $parsed['equip'],
-        'notes'       => $parsed['notes'],
-        'description' => $r['description'] ?? '',
-        'maintenance' => $maint
+        'id'           => $rid,
+        'area_id'      => $aid,
+        'room_name'    => $r['room_name'],
+        'capacity'     => (int)$r['capacity'],
+        'email'        => $r['room_admin_email'] ?? '',
+        'disabled'     => (int)$r['disabled'],
+        'type'         => $parsed['type'],
+        'equip'        => $parsed['equip'],
+        'custom_equip' => $parsed['custom_equip'],
+        'raw_equip'    => $parsed['raw_equip'],
+        'notes'        => $parsed['notes'],
+        'description'  => $r['description'] ?? '',
+        'maintenance'  => $maint
       )), ENT_QUOTES, 'UTF-8');
     ?>
       <div class="udec-room-card <?php echo $card_class; ?>"
@@ -874,7 +919,12 @@ print_header($context);
             <?php if (!empty($parsed['equip']['tv'])): ?>
               <span class="udec-equip-tag"><i class="fa-solid fa-tv"></i> TV</span>
             <?php endif; ?>
-            <?php if (empty($parsed['equip']) && !empty($parsed['notes'])): ?>
+            <?php if (!empty($parsed['custom_equip'])): ?>
+              <?php foreach ($parsed['custom_equip'] as $c_eq): ?>
+                <span class="udec-equip-tag udec-equip-custom" title="Equipamiento adicional"><i class="fa-solid fa-plug-circle-check" style="color: #0284C7;"></i> <?php echo htmlspecialchars($c_eq); ?></span>
+              <?php endforeach; ?>
+            <?php endif; ?>
+            <?php if (empty($parsed['raw_equip']) && !empty($parsed['notes'])): ?>
               <span class="udec-equip-tag"><i class="fa-solid fa-circle-info"></i> <?php echo htmlspecialchars($parsed['notes']); ?></span>
             <?php endif; ?>
           </div>
@@ -1024,17 +1074,19 @@ print_header($context);
           );
 
           $meta_json = htmlspecialchars(json_encode(array(
-            'id'          => $rid,
-            'area_id'     => $aid,
-            'room_name'   => $r['room_name'],
-            'capacity'    => (int)$r['capacity'],
-            'email'       => $r['room_admin_email'] ?? '',
-            'disabled'    => (int)$r['disabled'],
-            'type'        => $parsed['type'],
-            'equip'       => $parsed['equip'],
-            'notes'       => $parsed['notes'],
-            'description' => $r['description'] ?? '',
-            'maintenance' => $maint
+            'id'           => $rid,
+            'area_id'      => $aid,
+            'room_name'    => $r['room_name'],
+            'capacity'     => (int)$r['capacity'],
+            'email'        => $r['room_admin_email'] ?? '',
+            'disabled'     => (int)$r['disabled'],
+            'type'         => $parsed['type'],
+            'equip'        => $parsed['equip'],
+            'custom_equip' => $parsed['custom_equip'],
+            'raw_equip'    => $parsed['raw_equip'],
+            'notes'        => $parsed['notes'],
+            'description'  => $r['description'] ?? '',
+            'maintenance'  => $maint
           )), ENT_QUOTES, 'UTF-8');
         ?>
           <tr data-room-id="<?php echo $rid; ?>"
@@ -1184,9 +1236,39 @@ print_header($context);
           </label>
         </div>
 
-        <div class="udec-form-group" style="margin-top: 6px;">
-          <label for="drawerNotes">Observaciones o Equipamiento Adicional</label>
-          <input type="text" name="notes" id="drawerNotes" placeholder="Ej: Piso 2, 30 PCs, Telón retráctil..." maxlength="60">
+        <!-- Gestor Dinámico de Equipamiento Específico / Personalizado -->
+        <div class="udec-custom-equip-manager" style="margin-top: 14px; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 12px;">
+          <label style="font-size: 12.5px; font-weight: 700; color: #002B49; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span><i class="fa-solid fa-plus-circle" style="color: #0284C7;"></i> Equipamiento Específico o Personalizado</span>
+            <span style="font-weight: 400; font-size: 11px; color: #64748B;">Presiona Enter o botón para añadir</span>
+          </label>
+
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="drawerCustomEquipInput" placeholder="Ej: Cámara PTZ, Microfonía Inalámbrica, 30 Laptops..." style="flex: 1; font-size: 13px; padding: 7px 11px; border: 1.5px solid #CBD5E1; border-radius: 6px;">
+            <button type="button" class="udec-btn-add-equip" onclick="addCustomEquipTag()" style="background: #0284C7; color: #FFFFFF; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+          </div>
+
+          <!-- Sugerencias Rápidas de Equipamiento Frecuente -->
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+            <span style="font-size: 11px; color: #64748B; font-weight: 600;">Sugerencias:</span>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Cámara PTZ')">+ Cámara PTZ</button>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Microfonía Inalámbrica')">+ Microfonía Inalámbrica</button>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Pizarra Interactiva')">+ Pizarra Interactiva</button>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Telón Motorizado')">+ Telón Motorizado</button>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Pizarra Acrílica')">+ Pizarra Acrílica</button>
+            <button type="button" class="udec-equip-suggestion" onclick="addCustomEquipFromSuggestion('Mesas Modulares')">+ Mesas Modulares</button>
+          </div>
+
+          <!-- Contenedor de Tags Agregados -->
+          <div id="drawerCustomEquipTags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 20px;"></div>
+          <input type="hidden" name="custom_equip" id="drawerCustomEquipHidden" value="">
+        </div>
+
+        <div class="udec-form-group" style="margin-top: 10px;">
+          <label for="drawerNotes">Observaciones Adicionales / Ubicación Física</label>
+          <input type="text" name="notes" id="drawerNotes" placeholder="Ej: Piso 2, Pabellón Central, Ala Sur..." maxlength="80">
         </div>
       </div>
 
@@ -1418,6 +1500,69 @@ print_header($context);
   const btnClearMaint   = document.getElementById('btnDrawerClearMaint');
   const lblMaintSwitch  = document.getElementById('drawerMaintSwitchLabel');
 
+  // Gestor de Equipamiento Dinámico / Personalizado
+  const inputCustomEquip = document.getElementById('drawerCustomEquipInput');
+  const containerCustomEquipTags = document.getElementById('drawerCustomEquipTags');
+  const hiddenCustomEquip = document.getElementById('drawerCustomEquipHidden');
+  let currentCustomEquip = [];
+
+  function renderCustomEquipTags() {
+    if (!containerCustomEquipTags) return;
+    containerCustomEquipTags.innerHTML = '';
+    currentCustomEquip.forEach((item, index) => {
+      const tag = document.createElement('span');
+      tag.className = 'udec-custom-tag-chip';
+      tag.innerHTML = `
+        <i class="fa-solid fa-tag" style="font-size: 10px;"></i>
+        <span>${$('<div>').text(item).html()}</span>
+        <button type="button" class="tag-remove-btn" onclick="removeCustomEquipTag(${index})" title="Quitar">&times;</button>
+      `;
+      containerCustomEquipTags.appendChild(tag);
+    });
+    if (hiddenCustomEquip) {
+      hiddenCustomEquip.value = currentCustomEquip.join(', ');
+    }
+  }
+
+  window.addCustomEquipTag = function() {
+    if (!inputCustomEquip) return;
+    const val = (inputCustomEquip.value || '').trim();
+    if (val) {
+      const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+      parts.forEach(p => {
+        if (!currentCustomEquip.some(existing => existing.toLowerCase() === p.toLowerCase())) {
+          currentCustomEquip.push(p);
+        }
+      });
+      renderCustomEquipTags();
+      inputCustomEquip.value = '';
+    }
+    inputCustomEquip.focus();
+  };
+
+  window.addCustomEquipFromSuggestion = function(name) {
+    if (!currentCustomEquip.some(existing => existing.toLowerCase() === name.toLowerCase())) {
+      currentCustomEquip.push(name);
+      renderCustomEquipTags();
+    }
+  };
+
+  window.removeCustomEquipTag = function(index) {
+    if (index >= 0 && index < currentCustomEquip.length) {
+      currentCustomEquip.splice(index, 1);
+      renderCustomEquipTags();
+    }
+  };
+
+  if (inputCustomEquip) {
+    inputCustomEquip.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCustomEquipTag();
+      }
+    });
+  }
+
   window.updateMaintTheme = function() {
     const isFuera = radioModeFuera.checked;
     if (chkMaintEnabled.checked) {
@@ -1511,6 +1656,9 @@ print_header($context);
       chkAc.checked = false;
       chkTv.checked = false;
 
+      currentCustomEquip = [];
+      renderCustomEquipTags();
+
       clearMaintenanceInDrawer();
     } else {
       // Modo Editar Sala
@@ -1530,6 +1678,9 @@ print_header($context);
       chkAudio.checked     = !!(meta.equip && meta.equip.audio);
       chkAc.checked        = !!(meta.equip && meta.equip.ac);
       chkTv.checked        = !!(meta.equip && meta.equip.tv);
+
+      currentCustomEquip = Array.isArray(meta.custom_equip) ? [...meta.custom_equip] : [];
+      renderCustomEquipTags();
 
       // Cargar datos de mantención
       const maint = meta.maintenance || {};

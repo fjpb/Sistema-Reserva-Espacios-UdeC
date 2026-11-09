@@ -523,6 +523,15 @@
               <i class="fa-solid fa-layer-group"></i> ${$('<div>').text(part).html()}
             </span>
           `;
+        } else if (part.indexOf(',') !== -1) {
+          const subItems = part.split(',').map(s => s.trim()).filter(Boolean);
+          subItems.forEach(function(si) {
+            descHtml += `
+              <span class="udec-rmb-pill udec-rmb-equip">
+                <i class="fa-solid fa-plug-circle-check"></i> ${$('<div>').text(si).html()}
+              </span>
+            `;
+          });
         } else {
           descHtml += `
             <span class="udec-rmb-pill udec-rmb-equip">

@@ -521,30 +521,111 @@ nav.arrow a:hover {
   background-color: #F0F9FF !important;
 }
 
-/* Bloques de Reserva dentro de las Celdas */
-.dwm_main .booking,
-.dwm_main .booked a,
-.dwm_main .booked.multiply .booking,
-div.booking {
+/* Celdas con Reserva: Contenedor con límites estrictos */
+.dwm_main td.booked {
+  position: relative !important;
+  padding: 0 !important; /* Espaciado administrado limpiamente por el inset de la tarjeta */
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Tarjeta de Reserva Individual o Multibloque (Sin overlap ni desborde de bordes) */
+.dwm_main td.booked:not(.multiply) > .booking,
+table.dwm_main .booking:not(.multiply),
+div.booking:not(.multiply) {
+  position: absolute !important;
+  top: 2px !important;
+  left: 2px !important;
+  right: 2px !important;
+  bottom: 2px !important;
+  width: calc(100% - 4px) !important;
+  height: calc(100% - 4px) !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
   border-radius: 6px !important;
-  padding: 4px 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+  z-index: 10 !important;
+  transition: box-shadow 0.15s ease, filter 0.15s ease !important;
+}
+
+/* Enlace y contenido interno de la reserva */
+.dwm_main .booking > a,
+.dwm_main td.booked a,
+.dwm_main .booked a {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  padding: 4px 6px !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: inherit !important;
+  background-color: transparent !important;
   font-size: 11.5px !important;
   font-weight: 600 !important;
   color: #0F172A !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   line-height: 1.3 !important;
   text-decoration: none !important;
-  display: block;
-  transition: all 0.15s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+  word-break: break-word !important;
 }
 
+/* Efecto Hover: Resaltado sutil SIN desplazar ni pisar las líneas de la cuadrícula */
+.dwm_main td.booked:hover > .booking,
 .dwm_main .booking:hover,
-.dwm_main .booked a:hover,
 div.booking:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
-  filter: brightness(0.97);
+  transform: none !important; /* Prohibido mover en Y para no pisar bordes de celda */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+  filter: brightness(0.96) !important;
+  z-index: 25 !important;
+}
+
+.dwm_main .booking > a:hover,
+.dwm_main td.booked a:hover,
+.dwm_main .booked a:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Celdas con Reservas Múltiples (Solapamiento legítimo o eventos en el mismo bloque) */
+.dwm_main td.booked.multiply {
+  padding: 2px !important;
+}
+
+.dwm_main td.booked.multiply .booking,
+.dwm_main .booked.multiply div.booking {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 1.6em !important;
+  margin: 0 0 2px 0 !important;
+  box-sizing: border-box !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+}
+
+.dwm_main td.booked.multiply .booking:last-child,
+.dwm_main .booked.multiply div.booking:last-child {
+  margin-bottom: 0 !important;
+}
+
+.dwm_main td.booked.multiply .booking > a {
+  padding: 2px 4px !important;
+  font-size: 11px !important;
 }
 
 /* --- 5. LEYENDA INSTITUCIONAL DE TIPOS / CARRERAS (#COLOR_KEY) --- */
@@ -851,11 +932,27 @@ input[type="reset"]:hover,
     min-height: 3em !important;
   }
 
-  .dwm_main .booking,
+  .dwm_main td.booked {
+    padding: 0 !important;
+  }
+
+  .dwm_main td.booked:not(.multiply) > .booking,
+  table.dwm_main .booking:not(.multiply),
+  div.booking:not(.multiply) {
+    top: 1px !important;
+    left: 1px !important;
+    right: 1px !important;
+    bottom: 1px !important;
+    width: calc(100% - 2px) !important;
+    height: calc(100% - 2px) !important;
+  }
+
+  .dwm_main .booking > a,
+  .dwm_main td.booked a,
   .dwm_main .booked a,
-  div.booking {
-    font-size: 10.5px !important;
-    padding: 3px 5px !important;
+  div.booking a {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
     line-height: 1.2 !important;
   }
 
